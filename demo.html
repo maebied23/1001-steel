@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The plant's edge: demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;700;800&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+:root{
+  --bg:#ECEFF1; --surface:#F7F8F9; --sunk:#E2E6E9; --ink:#17212B; --ink2:#4A5866; --ink3:#6E7B87; --rule:#C6CDD3;
+  --straw:#B8901C; --straw-t:#F1E3B3; --bronze:#A4522A; --bronze-t:#F2D9CA; --purple:#6A3DA0; --purple-t:#E3D8F1; --blue:#1F55A5; --blue-t:#D5E1F4; --green:#2D7A4F; --green-t:#D6EADD;
+  --display:"Big Shoulders Display", "Arial Narrow", "Roboto Condensed", Impact, sans-serif;
+  --body:"Public Sans", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  color-scheme: light;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--body); font-size:14px; line-height:1.45; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+button{font-family:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--ink); outline-offset:2px; border-radius:4px}
+[hidden]{display:none!important}
+.sr{position:absolute; top:0; left:0; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ---------- shell ---------- */
+.shell{display:grid; grid-template-rows:auto minmax(0,1fr) auto; height:100vh; height:100dvh; min-height:600px;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px)}
+header.top{background:var(--surface); border-bottom:1px solid var(--rule); padding:8px 16px 8px}
+.row1,.row2{display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap}
+.row2{margin-top:7px}
+.brand{font-family:var(--display); font-weight:700; font-size:25px; line-height:1; letter-spacing:.005em; margin:0}
+.stepper{display:flex; gap:4px; flex-wrap:wrap}
+.step{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--rule); background:var(--bg); color:var(--ink2); border-radius:999px; padding:4px 11px 4px 5px; font-size:12.5px; font-weight:600; cursor:pointer}
+.step .n{display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%; background:var(--surface); border:1px solid var(--rule); font-family:var(--display); font-weight:700; font-size:13px; color:var(--ink)}
+.step.done{color:var(--ink)}
+.step.done .n{background:var(--sunk)}
+.step[aria-current="step"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.step[aria-current="step"] .n{background:var(--bg); color:var(--ink); border-color:var(--bg)}
+.ctrls{display:flex; gap:6px}
+.btn{border:1px solid var(--rule); background:var(--surface); border-radius:999px; padding:5px 12px; font-size:12.5px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; color:var(--ink)}
+.btn:hover{border-color:var(--ink2)}
+.btn svg{width:12px; height:12px}
+.btn.primary{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.spacer{flex:1}
+.tag{display:inline-block; font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px; background:var(--sunk); color:var(--ink2)}
+.tag.syn{background:var(--purple-t); color:var(--purple)}
+.runlbl{font-size:12.5px; color:var(--ink2); font-weight:600}
+.runlbl b{color:var(--ink)}
+.kpis{display:flex; gap:6px; flex-wrap:wrap}
+.kpi{display:inline-flex; align-items:baseline; gap:6px; padding:2px 11px; border:1px solid var(--rule); border-radius:999px; background:var(--bg); font-size:12.5px; color:var(--ink2); transition:border-color .3s}
+.kpi b{font-family:var(--display); font-weight:700; font-size:17px; color:var(--ink); font-variant-numeric:tabular-nums}
+.kpi.warn{border-color:var(--bronze)}
+.kpi.warn b{color:var(--bronze)}
+.seg{display:inline-flex; border:1px solid var(--rule); border-radius:999px; padding:2px; background:var(--bg)}
+.seg button{border:0; background:none; border-radius:999px; padding:3px 11px; font-size:12.5px; font-weight:600; color:var(--ink2); cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink); color:var(--bg)}
+
+/* ---------- main ---------- */
+main.app{display:grid; grid-template-columns:minmax(232px,280px) minmax(0,1fr) minmax(292px,340px); min-height:0}
+.panel{background:var(--surface); overflow:auto; padding:14px 16px 16px; transition:opacity .45s; min-height:0}
+.panel.left{border-right:1px solid var(--rule)}
+.panel.right{border-left:1px solid var(--rule)}
+.panel.dim{opacity:.4}
+.panel h2{font-family:var(--display); font-weight:700; font-size:18px; line-height:1.1; margin:0 0 8px; letter-spacing:.005em}
+.panel h2 small{font-family:var(--body); font-size:11.5px; font-weight:500; color:var(--ink2); margin-left:6px; letter-spacing:0}
+.panel h2:not(:first-child){margin-top:18px}
+ul.rows{list-style:none; margin:0; padding:0; border-top:1px solid var(--rule)}
+ul.rows li{border-bottom:1px solid var(--rule)}
+.commit{display:grid; grid-template-columns:18px 1fr; gap:2px 9px; padding:8px 0; cursor:default}
+.commit .ic{grid-row:1 / span 2; padding-top:2px}
+.commit .who{font-weight:650; font-size:13.5px; display:flex; justify-content:space-between; gap:8px}
+.commit .who .st{font-weight:600; font-size:12.5px; white-space:nowrap}
+.commit .meta{font-size:12px; color:var(--ink2)}
+.commit.pv .ic, .commit.pv .st{opacity:.55}
+.commit.pv .st{font-style:italic}
+.commit.flash{animation:flash 1.2s ease-out}
+@keyframes flash{from{background:var(--bronze-t)} to{background:transparent}}
+.src{display:grid; grid-template-columns:10px 1fr auto; gap:9px; align-items:center; padding:6px 0; font-size:12.5px}
+.src .dot{width:10px; height:10px; border-radius:50%}
+.src .t{color:var(--ink2); font-size:12px; white-space:nowrap}
+.src.new .t{color:var(--ink); font-weight:650}
+.src.note .dot{background:none; border:1.5px dashed var(--ink2)}
+.pvnote{font-size:11.5px; color:var(--ink2); font-style:italic; margin:6px 0 0}
+
+.stage{position:relative; min-width:0; min-height:0; display:flex; flex-direction:column; background:var(--bg); overflow:hidden}
+.scene-scroll{flex:1; min-height:0; overflow:hidden}
+#scene{display:block; width:100%; height:100%}
+.caption{margin:0; padding:8px 16px; font-size:13px; color:var(--ink2); border-top:1px solid var(--rule); background:var(--surface)}
+.caption b{color:var(--ink)}
+/* bottom-left, so it never covers the data stores along the top of the scene */
+.banner{position:absolute; bottom:12px; left:16px; transform:translateY(calc(100% + 72px)); visibility:hidden; transition:transform .5s cubic-bezier(.2,.8,.2,1), visibility 0s .5s; background:var(--surface); border:1px solid var(--bronze); border-left:5px solid var(--bronze); border-radius:10px; padding:8px 14px; z-index:4; max-width:calc(100% - 32px); width:max-content; box-shadow:0 1px 0 var(--rule)}
+.banner.show{transform:translateY(0); visibility:visible; transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.stage.inside .banner{bottom:56px}
+.banner .b1{font-weight:650; font-size:14px}
+.banner .b2{font-size:12px; color:var(--ink2); display:flex; align-items:center; gap:6px; margin-top:1px}
+.banner .b2 i{width:8px; height:8px; border-radius:50%; background:var(--green); display:inline-block}
+
+/* right panel cards */
+.card p{margin:0 0 10px; font-size:14px; line-height:1.5}
+.card .lead{font-size:14.5px}
+.evt{border:1px solid var(--rule); border-left:4px solid var(--bronze); border-radius:8px; padding:8px 11px; margin:0 0 12px; background:var(--bg)}
+.evt .k{font-size:12px; color:var(--ink2)}
+.evt .v{font-weight:650}
+.linkbtn{background:none; border:0; padding:0; color:var(--blue); font-weight:600; font-size:13.5px; text-decoration:underline; text-underline-offset:3px; cursor:pointer}
+.opts{display:flex; flex-direction:column; gap:6px; margin:2px 0 6px}
+.opt{border:1px solid var(--rule); border-radius:10px; padding:7px 11px; background:var(--bg); transition:border-color .2s, opacity .3s, background .2s; outline-offset:2px}
+.opt:hover, .opt:focus-visible{border-color:var(--ink2)}
+.opt .oh{display:flex; align-items:flex-start; gap:8px; justify-content:space-between}
+.opt h3{margin:0; font-size:14px; line-height:1.3; font-weight:650}
+.opt h3 .id{font-family:var(--display); font-weight:700; font-size:16px; margin-right:6px}
+.opt .shapes{display:flex; gap:3px; flex:none; padding-top:2px}
+.figs{display:grid; grid-template-columns:auto auto 1fr; gap:2px 14px; margin:4px 0 0}
+.figs div{min-width:0}
+.figs b{display:block; font-size:13.5px; font-weight:650; font-variant-numeric:tabular-nums}
+.figs div:last-child b{font-size:12.5px; font-weight:600}
+.figs span{display:block; font-size:11.5px; color:var(--ink2)}
+.otag{display:inline-block; margin-top:6px; font-size:12px; font-weight:600; padding:1px 8px; border-radius:999px; background:var(--sunk); color:var(--ink)}
+.ostate{margin-top:4px; font-size:12.5px; font-weight:600; line-height:1.35}
+.oact{display:flex; align-items:center; gap:6px; margin-top:5px; flex-wrap:wrap}
+.oact .lock{font-size:12px; color:var(--ink2); font-style:italic}
+.oact details{margin-left:auto}
+.oact .opencount{margin-left:auto; font-size:12px; font-weight:650; color:var(--ink); white-space:nowrap}
+.oact .opencount + details{margin-left:10px}
+.oact summary{font-size:12.5px; color:var(--ink2); cursor:pointer; font-weight:600}
+.odet{font-size:12.5px; color:var(--ink2); margin:6px 0 0; line-height:1.45}
+.odet b{color:var(--ink)}
+.sbtn{border:1px solid var(--rule); background:var(--surface); border-radius:7px; padding:4px 9px; font-size:12px; font-weight:650; cursor:pointer; color:var(--ink)}
+.sbtn.choose{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.sbtn:disabled{opacity:.45; cursor:not-allowed}
+.reasons{margin-top:8px; display:flex; flex-direction:column; gap:4px}
+.reasons button{text-align:left; border:1px solid var(--rule); background:var(--surface); border-radius:7px; padding:5px 9px; font-size:12.5px; cursor:pointer; color:var(--ink)}
+.reasons button:hover{border-color:var(--ink2)}
+.opt.review{border-color:var(--ink); background:var(--surface)}
+.opt.rej{opacity:.6; background:var(--sunk)}
+.opt.flag{border:1.5px solid var(--bronze)}
+.opt.chosen{border:2px solid var(--ink)}
+.learn{font-size:13.5px; font-weight:600; margin:2px 0 8px; padding-left:10px; border-left:3px solid var(--ink2)}
+.quiet{font-size:12.5px; color:var(--ink2); margin:6px 0 0}
+.quiet.top{margin:-2px 0 8px}
+.hint{order:-1}
+.hint{font-size:12.5px; font-weight:650; margin:6px 0 0}
+.replaybig{margin-top:6px; font-size:14px; padding:8px 16px}
+.calc{display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 7px; margin:0 0 10px; font-size:13px; color:var(--ink2); font-variant-numeric:tabular-nums}
+.calc b{color:var(--ink); font-weight:650}
+.calc .eq{font-weight:700; color:var(--ink)}
+.subh{font-size:12.5px; font-weight:650; color:var(--ink2); margin:0 0 4px}
+ol.roll{list-style:none; margin:0 0 12px; padding:0; border-top:1px solid var(--rule)}
+.roll li{display:grid; grid-template-columns:16px 1fr auto 14px; gap:1px 8px; align-items:center; padding:5px 0; border-bottom:1px solid var(--rule); font-size:12.5px}
+.roll .n{font-family:var(--display); font-weight:700; font-size:15px; line-height:1}
+.roll .c{font-weight:600}
+.roll .d{color:var(--ink2); font-size:12px; white-space:nowrap}
+.roll .rn{grid-column:2 / -1; font-size:12px; color:var(--ink2)}
+.chk{list-style:none; margin:4px 0 0; padding:0}
+.chk li{padding-left:16px; position:relative}
+.chk li::before{content:"✓"; position:absolute; left:0; color:var(--ink2)}
+.chk li.open::before{content:"?"; font-weight:700; color:var(--ink)}
+.chk li.open{color:var(--ink)}
+.rq{font-size:12px; font-weight:650; color:var(--ink2)}
+#scene .legend text{font-size:12px; stroke-width:3.5px; fill:var(--ink2); font-weight:500}
+/* boxes drawn in screen px and scaled with --u in fitText */
+#scene .px text{font-size:12px; stroke-width:3.5px}
+#scene .px text.lb{font-size:12.5px}
+
+/* ---------- ledger ---------- */
+.ledger{background:var(--surface); border-top:1px solid var(--rule); padding:8px 16px 10px}
+.ledger h2{font-family:var(--display); font-weight:700; font-size:18px; margin:0 0 6px; display:flex; align-items:baseline; gap:10px}
+.ledger h2 small{font-family:var(--body); font-weight:500; font-size:12px; color:var(--ink2)}
+.tbl-wrap{max-height:150px; overflow:auto; border:1px solid var(--rule); border-radius:10px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; font-size:12.5px; min-width:1100px}
+th{position:sticky; top:0; z-index:1; background:var(--surface); text-align:left; font-weight:650; color:var(--ink2); padding:6px 10px; border-bottom:2px solid var(--ink); font-size:12px; white-space:nowrap}
+td{padding:5px 10px; border-bottom:1px solid var(--rule); vertical-align:top}
+tr:last-child td{border-bottom:0}
+tr.live td{background:color-mix(in srgb, var(--bronze-t) 55%, transparent)}
+tr.enter td{animation:rowin .8s ease-out}
+@keyframes rowin{from{background:var(--bronze-t)}}
+td.id{font-weight:650; white-space:nowrap}
+td:last-child{white-space:nowrap}
+.stg{display:flex; gap:3px; padding-top:3px}
+.stg i{width:11px; height:11px; border-radius:2px; background:var(--sunk); border:1px solid var(--rule); display:block; transition:background .3s}
+.stg i.on{background:var(--straw); border-color:color-mix(in srgb, var(--straw) 60%, var(--ink))}
+.muted{color:var(--ink2)}
+td .sub{color:var(--ink2); font-size:11.5px; margin-left:6px}
+
+/* ---------- tooltip ---------- */
+.tip{position:fixed; pointer-events:none; z-index:50; background:var(--ink); color:var(--bg); font-size:12.5px; line-height:1.4; padding:8px 11px; border-radius:8px; max-width:270px; opacity:0; transition:opacity .12s}
+.tip.on{opacity:1}
+.tip .tn{font-weight:700; font-size:13px; margin-bottom:2px}
+.tip .th{display:flex; align-items:center; gap:6px; margin-bottom:3px; flex-wrap:wrap}
+.tip .th i{width:9px; height:9px; border-radius:50%; display:inline-block; border:1px solid var(--bg)}
+.tip .tr{opacity:.92}
+
+/* ---------- status icons (html + svg) ---------- */
+.si-ok circle{fill:var(--surface); stroke:var(--ink2); stroke-width:1.5}
+.si-ok path{fill:none; stroke:var(--ink2); stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round}
+.si-risk polygon{fill:var(--straw); stroke:color-mix(in srgb, var(--straw) 50%, var(--ink)); stroke-width:1}
+.si-bad rect{fill:var(--bronze)}
+
+/* ---------- scene ---------- */
+#scene{--u:1}
+#scene polygon, #scene path, #scene line, #scene ellipse, #scene rect, #scene polyline, #scene circle{vector-effect:non-scaling-stroke; stroke-linejoin:round}
+#scene text{font-family:var(--body); fill:var(--ink); font-size:calc(12px * var(--u)); font-weight:500; paint-order:stroke; stroke:var(--bg); stroke-width:calc(3.5px * var(--u)); stroke-linejoin:round; pointer-events:none}
+#scene text.lb{font-size:calc(12.5px * var(--u)); font-weight:650}
+#scene text.disp{font-family:var(--display); font-weight:700; font-size:calc(16px * var(--u)); fill:var(--ink2)}
+#scene text.edge{font-weight:650; font-size:calc(12.5px * var(--u))}
+#scene text.tin{fill:var(--blue); font-weight:650}
+#scene text.nt{stroke:var(--surface)}
+.fam-blue{--c:var(--blue)} .fam-green{--c:var(--green)} .fam-ink{--c:var(--ink3)} .fam-purple{--c:var(--purple)} .fam-straw{--c:var(--straw)}
+.fam polygon,.fam path,.fam ellipse{stroke:color-mix(in srgb, var(--c) 80%, var(--ink)); stroke-width:1.5}
+.fam.thin polygon,.fam.thin path,.fam.thin ellipse{stroke-width:1}
+.ft{fill:color-mix(in srgb, var(--c) 9%, var(--surface))}
+.fl{fill:color-mix(in srgb, var(--c) 22%, var(--surface))}
+.fr{fill:color-mix(in srgb, var(--c) 36%, var(--surface))}
+.wire{fill:none; stroke:color-mix(in srgb, var(--c) 70%, var(--surface)); stroke-width:1; stroke-dasharray:2 2}
+.gridline{fill:none; stroke:var(--rule); stroke-width:.8}
+.plate-in{fill:color-mix(in srgb, var(--blue) 6%, var(--bg))}
+.plate-out{fill:color-mix(in srgb, var(--green) 10%, var(--bg)); stroke:color-mix(in srgb, var(--green) 40%, var(--bg)); stroke-width:1}
+.sea{fill:var(--sunk); stroke:var(--rule); stroke-width:1}
+.fence{fill:none; stroke:var(--ink); stroke-width:2}
+.road polygon{fill:color-mix(in srgb, var(--ink3) 24%, var(--bg))}
+.road.inr polygon{fill:color-mix(in srgb, var(--ink3) 16%, var(--bg))}
+.conv polygon{fill:color-mix(in srgb, var(--blue) 22%, var(--bg))}
+.conv.out polygon{fill:color-mix(in srgb, var(--green) 26%, var(--bg))}
+.pipe{fill:none; stroke:var(--green); stroke-width:2.5; stroke-linecap:round}
+.bracket{fill:none; stroke:var(--blue); stroke-width:1.2; stroke-dasharray:6 5}
+.leader{fill:none; stroke:var(--ink3); stroke-width:1}
+.link{fill:none; stroke:var(--ink3); stroke-width:1; stroke-dasharray:3 4; opacity:.22; transition:opacity .2s}
+.notebox{fill:none; stroke:var(--ink2); stroke-width:1.5; stroke-dasharray:4 3}
+.notepaper{fill:var(--surface); stroke:var(--ink2); stroke-width:1.2}
+.glow{fill:var(--straw); opacity:.25; animation:glow 2.4s ease-in-out infinite}
+@keyframes glow{50%{opacity:.6}}
+.obj{transition:opacity .25s}
+.obj, .storeg{cursor:default}
+#scene.focus .obj:not(.hl), #scene.focus .lbl:not(.hl), #scene.focus .pl{opacity:.16}
+#scene.focus .link.hl{opacity:1; stroke:var(--ink); stroke-width:1.5}
+#scene.focus .link:not(.hl){opacity:.06}
+#scene.inside .side-out{opacity:.14}
+#scene.inside .link, #scene.inside .stamp{opacity:0}
+#scene .inside-only{opacity:0; transition:opacity .4s}
+#scene.inside .inside-only{opacity:1}
+#scene .edge-only{transition:opacity .4s}
+#scene.inside .edge-only{opacity:0}
+.ping ellipse.ft{animation:ping 0.7s ease-in-out 3}
+@keyframes ping{50%{fill:var(--green)}}
+.pulse{fill:none; stroke:var(--bronze); stroke-width:2.5; stroke-linecap:round}
+.pulse.fade{opacity:0; transition:opacity .9s}
+.pdot{fill:var(--bronze)}
+.phalo{fill:var(--bronze); opacity:.22}
+.gasdot{fill:var(--green); stroke:var(--surface); stroke-width:1.5}
+.rt{fill:none; stroke-width:2.5; stroke-linecap:round; opacity:0; transition:opacity .3s}
+.rt.on{opacity:1}
+.rt.pv{opacity:.55}
+.rt[data-st="bad"]{stroke:var(--bronze); stroke-dasharray:7 5}
+.rt[data-st="risk"]{stroke:var(--straw); stroke-dasharray:7 5}
+.rt[data-st="good"]{stroke:var(--ink2)}
+.badge{transition:opacity .3s}
+.badge.pv{opacity:.55}
+.stamp rect{fill:var(--surface); stroke:var(--blue); stroke-width:1.5}
+#scene .stamp text{fill:var(--blue); font-weight:650; stroke:none}
+.stamp path{fill:none; stroke:var(--blue); stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.stamp, .pnote, .xmark, .laycan{transition:opacity .4s}
+.pnote rect.bg{fill:var(--surface); stroke:var(--ink2); stroke-width:1.5; stroke-dasharray:5 3}
+.pnote line{stroke:var(--ink2); stroke-width:1; stroke-dasharray:3 3}
+#scene .pnote text{stroke:none}
+#scene .pnote text.nh{font-weight:650; fill:var(--ink2)}
+.xmark circle{fill:var(--bronze)}
+#scene .xmark text{fill:var(--ink); font-weight:650}
+.fillbar{fill:var(--straw); stroke:none}
+.hidden{opacity:0; pointer-events:none}
+.ptrk{pointer-events:none}
+.paused *{animation-play-state:paused!important}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important; transition:none!important}
+}
+
+/* ---------- short screens ---------- */
+@media (max-height: 860px) and (min-width: 900px){
+  .tbl-wrap{max-height:104px}
+  .panel{padding-top:10px}
+  .opt{padding:7px 10px}
+}
+/* ---------- small screens ---------- */
+@media (max-width: 1100px){
+  .brand{font-size:22px}
+  .step .lbl{display:none}
+  .step{padding-right:5px}
+}
+@media (max-width: 899px){
+  .shell{display:block; height:auto; min-height:0}
+  main.app{display:flex; flex-direction:column}
+  .stage{order:1; height:min(78vh, 540px)}
+  .scene-scroll{overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch}
+  #scene{min-width:880px}
+  .panel.left{order:2; border-right:0; border-top:1px solid var(--rule)}
+  .panel.right{order:3; border-left:0; border-top:1px solid var(--rule)}
+  .panel.dim{opacity:1}
+  .banner{width:auto; right:16px}
+  .ledger{padding-bottom:20px}
+  .tbl-wrap{max-height:none}
+}
+.backlink{font-size:13.5px; font-weight:600; color:var(--ink2); text-decoration:underline; text-underline-offset:3px; white-space:nowrap}
+.backlink:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="top">
+  <div class="row1">
+    <h1 class="brand">The plant's edge</h1>
+    <a class="backlink" href="index.html">Read the proposal</a>
+    <nav class="stepper" aria-label="Acts" id="stepper"></nav>
+    <div class="ctrls">
+      <button class="btn" id="playBtn" type="button" aria-label="Pause"></button>
+      <button class="btn" id="replayBtn" type="button"></button>
+    </div>
+    <span class="spacer"></span>
+    <span class="tag syn" title="A fictional plant, fictional customers, fictional numbers">Synthetic data</span>
+  </div>
+  <div class="row2">
+    <span class="runlbl" id="runLbl"></span>
+    <div class="kpis" id="kpis" aria-live="off"></div>
+    <span class="spacer"></span>
+    <div class="seg" id="viewSeg" role="group" aria-label="View" hidden>
+      <button type="button" data-view="edge" aria-pressed="true">Edge view</button>
+      <button type="button" data-view="inside" aria-pressed="false">Inside view</button>
+    </div>
+  </div>
+</header>
+
+<main class="app">
+  <aside class="panel left" id="leftPanel" aria-label="Orders and data sources">
+    <h2>4 of this week's orders</h2>
+    <ul class="rows" id="commits"></ul>
+    <p class="pvnote" id="pvNote" hidden>Lighter rows show the response you are pointing at.</p>
+    <h2>Data feeding the model</h2>
+    <ul class="rows" id="sources"></ul>
+    <p class="pvnote" style="font-style:normal">Times are simulated.</p>
+  </aside>
+
+  <section class="stage" id="stage" aria-label="Plant scene">
+    <div class="banner" id="banner" role="status">
+      <div class="b1">Gas notice EV-0412: allocation reduced to 70% for 72 hours</div>
+      <div class="b2"><i></i>Source: Gas notices · Tue 06:40</div>
+    </div>
+    <div class="scene-scroll" id="sceneScroll">
+      <svg id="scene" role="img" aria-label="Isometric view of a fictional steel plant, the parties at its edge, and the data stores that hold each object" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+    <p class="caption" id="insideCap" hidden><b>Inside the plant, each layer already has software, usually from the company that built the plant.</b> The demo does not replace any of it.</p>
+  </section>
+
+  <aside class="panel right" id="rightPanel" aria-label="What is happening"></aside>
+</main>
+
+<section class="ledger" aria-label="Decision ledger">
+  <h2>Decision ledger <small>newest first</small></h2>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th style="width:90px">ID</th><th style="width:262px">Event</th>
+        <th style="width:96px" title="Signal, Model, Options, Decision, Recorded">Stages</th>
+        <th>Chosen</th><th>Rejected, with reason</th>
+        <th style="width:84px">Tonnes late</th><th>Time to decision</th>
+      </tr></thead>
+      <tbody id="ledgerBody"></tbody>
+    </table>
+  </div>
+</section>
+</div>
+<div class="tip" id="tip" role="tooltip"></div>
+<div class="sr" aria-live="polite" id="live"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* =====================================================================
+   DATA: every number in the demo comes from here. All values synthetic.
+   ===================================================================== */
+const DATA = {
+  plant: {
+    name: "Gulf Coast Steel, Plant 1",
+    normalOutput_tPerDay: 4000,        // rolled product
+    driRate_tPerHour: 170,
+    freeBilletStock_t: 1000            // stock not already committed to an order
+  },
+  plant2: {
+    name: "Plant 2 (same group)",
+    rebarStand32mm: "Down Tue to Thu for a roll change",   // in the planner's notes, not yet in Plant 2's scheduler
+    billetStock_t: 3200
+  },
+  event: {
+    id: "EV-0412",
+    source: "Gas notices",
+    text: "Gas allocation reduced to 70% for 72 hours",
+    short: "Gas allocation reduced to 70% for 72 h",
+    receivedAt: "Tue 06:40",
+    gasPct: 70,
+    hours: 72,
+    lostOutput_t: 3600,                // 30% of 4,000 t/day for 3 days
+    shortfall_t: 2600                  // lost output minus free billet stock (3,600 - 1,000)
+  },
+  commitments: [
+    { id: "C-118", customer: "Tower project A", party: "tower",      product: "Rebar 32 mm",    tonnes: 2800, due: "Thu (Day 3)", note: "Crane schedule fixed", campaign: "Rebar 32 mm · tower" },
+    { id: "C-121", customer: "Contractor B",    party: "contractor", product: "Rebar 16-25 mm", tonnes: 1600, due: "Fri (Day 4)", note: "", campaign: "Rebar 16-25 mm · contractor" },
+    { id: "C-125", customer: "Export customer", party: "export",     product: "Wire rod",       tonnes: 3000, due: "Sun (Day 6), vessel laycan", note: "Demurrage applies", campaign: "Wire rod · export" },
+    { id: "C-130", customer: "Plant 2 (group)", party: "plant2",     product: "Billets",        tonnes: 1200, due: "Mon (Day 7)", note: "Internal transfer" }
+  ],
+  // The rolling sequence runs the export wire-rod campaign first (vessel laycan), so the 2,600 t
+  // shortfall lands on the rebar campaign that follows. The gas cut falls on days 1 to 3, before the
+  // tower's Thu date, so the tower order cannot be made in time. The contractor's Fri date leaves a
+  // day to recover, so it is at risk rather than lost.
+  statusAfterEvent: { "C-118": "miss", "C-121": "risk", "C-125": "ok", "C-130": "ok" },
+  // Plant 1's rolling sequence this week (rolled orders only; C-130 ships as billets).
+  rollingOrder: ["C-125", "C-118", "C-121"],
+  // Each check names where its data came from. `open` marks a check that still needs someone's agreement.
+  options: [
+    {
+      id: "A",
+      title: "Roll rebar first, delay export",
+      details: "Swap the campaign order. Ask the export customer to move the laycan by 6 days.",
+      outcome: { "C-118": "ok", "C-121": "ok", "C-125": "late", "C-130": "ok" },
+      tonnesLate: 3000, extraCost_kUSD: 180, energy: "No change",
+      rollingOrder: ["C-118", "C-121", "C-125"], rowNotes: { "C-125": "Laycan moved 6 days" },
+      checks: [
+        { text: "Gas within 70%", src: "Gas notices" },
+        { text: "Rolling capacity", src: "Meltshop scheduler" },
+        { text: "Vessel laycan", src: "Vessel tracking", open: "needs the export customer's agreement" }
+      ]
+    },
+    {
+      id: "B",
+      title: "Roll tower order at Plant 2",
+      details: "Plant 2 rolls 1,600 t of the tower order from its own billets. Plant 1 rolls the other 1,200 t using the billets meant for Plant 2, so that transfer is a week late.",
+      plant2Rolls_t: 1600, plant1FromTransfer_t: 1200,
+      outcome: { "C-118": "ok", "C-121": "ok", "C-125": "ok", "C-130": "late" },
+      tonnesLate: 1200, extraCost_kUSD: 95, energy: "+3% at Plant 2",
+      tag: "Lowest cost, only an internal order late",
+      rollingOrder: ["C-125", "C-118", "C-121"], rowNotes: { "C-118": "1,600 t at Plant 2, 1,200 t from transfer billets" },
+      checks: [
+        { text: "Gas within 70%", src: "Gas notices" },
+        { text: "Plant 2 billet stock", src: "Historian" },
+        { text: "Plant 2 rolling capacity", src: "Plant 2's scheduler" },
+        { text: "Group transfer route", src: "ERP" }
+      ]
+    },
+    {
+      id: "C",
+      title: "Buy billets on the spot market",
+      details: "",                     // filled from the shortfall below
+      outcome: { "C-118": "ok", "C-121": "ok", "C-125": "ok", "C-130": "ok" },
+      tonnesLate: 0, extraCost_kUSD: 290, energy: "-30% gas, within allocation",
+      spotBillets_t: 2600,
+      rollingOrder: ["C-125", "C-118", "C-121"], rowNotes: {},
+      checks: [
+        { text: "Gas within 70%", src: "Gas notices" },
+        { text: "Supplier quotes", src: "ERP" },
+        { text: "Billet yard capacity", src: "Historian" },
+        { text: "Delivery before Thu", src: "Supplier quotes", open: "supplier to confirm" },
+        { text: "Grade certificate", src: "Supplier quotes", open: "supplier to send for the tower's 32 mm grade" }
+      ]
+    }
+  ],
+  plannerRejection: {
+    option: "B",
+    by: "Plant 2 planner",
+    reason: "Plant 2's 32 mm stand is down Tue to Thu for a roll change",
+    short: "32 mm stand down Tue to Thu",
+    validTo: "Fri"
+  },
+  timeToDecision: { run1: "14 min", run2: "6 min", typical: "1 to 3 days" },
+  // Reasons offered for each option, so a viewer never sees a reason that belongs to another option.
+  rejectionReasons: {
+    A: ["Export customer has refused laycan changes this quarter", "Demurrage would cost more than shown", "Other"],
+    B: ["Plant 2's 32 mm stand is down Tue to Thu for a roll change", "The Plant 2 transfer cannot slip a week", "Other"],
+    C: ["Spot billets do not meet the tower project's grade specification", "Spot billets cannot arrive before Thu", "Other"]
+  },
+  // Overriding a recorded note needs a reason, which is kept with the decision.
+  overrideReasons: ["The note no longer applies", "This order's priority outweighs the risk", "Other"],
+  sources: [
+    { id: "erp",    name: "ERP",                fam: "purple", ago: 2 },
+    { id: "sched",  name: "Meltshop scheduler", fam: "blue",   ago: 1 },
+    { id: "hist",   name: "Historian",          fam: "straw",  ago: 1 },
+    { id: "gasn",   name: "Gas notices",        fam: "green",  ago: 6 },
+    { id: "vessel", name: "Vessel tracking",    fam: "green",  ago: 3 }
+  ],
+  scene: {
+    pelletStock_t: 64000,
+    oreVessel: { cargo_t: 75000, eta: "Thu 14:00" },
+    exportVessel: { laycan: "Sun (Day 6)", moved: "+6 days" },
+    dispatchedToday_t: 1900,
+    billetBarCapacity_t: 3000,
+    plant2RollingStands: 2
+  },
+  ledgerHistory: [
+    { id: "EV-0398", event: "Ore vessel delayed 4 days", chosen: "Draw down pellet stock, delay Plant 2 transfer", rejected: "", late: 0, time: "22 min, plant time" },
+    { id: "EV-0377", event: "Tower project A brings delivery forward 3 days", chosen: "Re-sequence rolling campaign", rejected: "Plant 2 transfer: stand availability unconfirmed (planner)", late: 300, time: "9 min, plant time" }
+  ]
+};
+
+// Option C's text follows the shortfall, so changing the stock or the cut keeps it right.
+{ const C = DATA.options.find(o => o.id === "C"), t = C.spotBillets_t.toLocaleString("en-US");
+  C.details = `Buy ${t} t of billets, keep the current sequence, run direct reduction within the ${DATA.event.gasPct}% allocation.`;
+  C.rowNotes = { "C-118": `${t} t from spot billets` }; }
+
+/* ---------- consistency checks (section 7 of the brief) ---------- */
+(function checks(){
+  const ok = [];
+  const t = id => DATA.commitments.find(c => c.id === id).tonnes;
+  const sumBy = (map, set) => DATA.commitments.filter(c => set.includes(map[c.id])).reduce((a, c) => a + c.tonnes, 0);
+  ok.push(console.assert(DATA.event.shortfall_t === DATA.event.lostOutput_t - DATA.plant.freeBilletStock_t, "shortfall = lost output - free stock") ?? (DATA.event.shortfall_t === DATA.event.lostOutput_t - DATA.plant.freeBilletStock_t));
+  const lost = DATA.plant.normalOutput_tPerDay * (100 - DATA.event.gasPct) / 100 * DATA.event.hours / 24;
+  ok.push(lost === DATA.event.lostOutput_t); console.assert(lost === DATA.event.lostOutput_t, "lost output = 30% x output x 3 days");
+  const atRisk = sumBy(DATA.statusAfterEvent, ["miss", "risk", "late"]);
+  ok.push(atRisk === 4400); console.assert(atRisk === 4400, "tonnes at risk after the event is 4,400");
+  const tv = t("C-118"), sf = DATA.event.shortfall_t;
+  ok.push(sf > 0 && sf <= tv); console.assert(sf > 0 && sf <= tv, "the shortfall lands within the tower order, so the contractor is only at risk");
+  DATA.options.forEach(o => { const v = sumBy(o.outcome, ["late", "miss"]); ok.push(v === o.tonnesLate); console.assert(v === o.tonnesLate, "option " + o.id + " tonnesLate"); });
+  const B = DATA.options.find(o => o.id === "B");
+  const bOk = B.plant2Rolls_t + B.plant1FromTransfer_t === t("C-118") && B.plant1FromTransfer_t === t("C-130") && B.plant2Rolls_t <= DATA.plant2.billetStock_t;
+  ok.push(bOk); console.assert(bOk, "option B arithmetic");
+  const C = DATA.options.find(o => o.id === "C");
+  ok.push(C.spotBillets_t === DATA.event.shortfall_t); console.assert(C.spotBillets_t === DATA.event.shortfall_t, "option C buys the shortfall");
+  const sameSet = (a, b) => a.length === b.length && a.every(x => b.includes(x));
+  DATA.options.forEach(o => { const v = sameSet(o.rollingOrder, DATA.rollingOrder) && !!DATA.rejectionReasons[o.id]; ok.push(v); console.assert(v, "option " + o.id + " rolling order and reasons"); });
+  window.__dataChecksPassed = ok.every(Boolean);
+})();
+
+/* =====================================================================
+   Helpers
+   ===================================================================== */
+const NS = "http://www.w3.org/2000/svg";
+function sv(tag, attrs, parent, text){
+  const e = document.createElementNS(NS, tag);
+  if (attrs) for (const k in attrs) if (attrs[k] != null) e.setAttribute(k, attrs[k]);
+  if (text != null) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function hx(tag, attrs, parent, html){
+  const e = document.createElement(tag);
+  if (attrs) for (const k in attrs) if (attrs[k] != null) { if (k === "class") e.className = attrs[k]; else e.setAttribute(k, attrs[k]); }
+  if (html != null) e.innerHTML = html;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+const fmt = n => n.toLocaleString("en-US");
+const $ = id => document.getElementById(id);
+const RM = window.matchMedia("(prefers-reduced-motion: reduce)");
+let reduced = RM.matches;
+if (RM.addEventListener) RM.addEventListener("change", e => { reduced = e.matches; });
+const optById = id => DATA.options.find(o => o.id === id);
+const commitById = id => DATA.commitments.find(c => c.id === id);
+const storeName = id => id === "notes" ? "Planners' notes" : DATA.sources.find(s => s.id === id).name;
+const storeFam = id => id === "notes" ? "ink2" : DATA.sources.find(s => s.id === id).fam;
+
+function statusIcon(st, size, parent){
+  // st: ok | risk | miss | late
+  const s = size || 14;
+  const svg = parent || sv("svg", { width: s, height: s, viewBox: "0 0 14 14", "aria-hidden": "true" });
+  const g = sv("g", { class: st === "ok" ? "si-ok" : st === "risk" ? "si-risk" : "si-bad" }, svg);
+  if (st === "ok") { sv("circle", { cx: 7, cy: 7, r: 5.8 }, g); sv("path", { d: "M4.3 7.2 L6.2 9 L9.8 5.2" }, g); }
+  else if (st === "risk") sv("polygon", { points: "7,1.2 13,12.6 1,12.6" }, g);
+  else sv("rect", { x: 1.5, y: 1.5, width: 11, height: 11, rx: 1 }, g);
+  return svg;
+}
+const statusWord = (st, c) => st === "ok" ? "On track" : st === "risk" ? "At risk" : st === "late" ? "Late" : "Will miss " + c.due.split(" ")[0];
+
+/* =====================================================================
+   Isometric projection and primitives
+   ===================================================================== */
+const S = 5;                                   // scale
+const ISO_X = Math.cos(Math.PI / 6), ISO_Y = Math.sin(Math.PI / 6);
+const BB = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+let tracking = true;
+function track(x, y){ if (!tracking) return; if (x < BB.x0) BB.x0 = x; if (y < BB.y0) BB.y0 = y; if (x > BB.x1) BB.x1 = x; if (y > BB.y1) BB.y1 = y; }
+function iso(x, y, z = 0){
+  const sx = (x - y) * ISO_X * S, sy = (x + y) * ISO_Y * S - z * S;
+  track(sx, sy);
+  return [sx, sy];
+}
+const P = pts => pts.map(p => { const q = iso(p[0], p[1], p[2] || 0); return q[0].toFixed(1) + "," + q[1].toFixed(1); }).join(" ");
+const D = pts => pts.map((p, i) => { const q = iso(p[0], p[1], p[2] || 0); return (i ? "L" : "M") + q[0].toFixed(1) + "," + q[1].toFixed(1); }).join(" ");
+function poly(g, pts, cls){ return sv("polygon", { points: P(pts), class: cls || null }, g); }
+
+function box(g, x, y, w, d, h, o = {}){
+  const z = o.z || 0;
+  const G = sv("g", { class: "fam fam-" + (o.fam || "blue") + (o.cls ? " " + o.cls : "") }, g);
+  poly(G, [[x, y + d, z], [x + w, y + d, z], [x + w, y + d, z + h], [x, y + d, z + h]], "fl");
+  poly(G, [[x + w, y, z], [x + w, y + d, z], [x + w, y + d, z + h], [x + w, y, z + h]], "fr");
+  poly(G, [[x, y, z + h], [x + w, y, z + h], [x + w, y + d, z + h], [x, y + d, z + h]], "ft");
+  return G;
+}
+function wirebox(g, x, y, w, d, h, o = {}){
+  const z = o.z || 0, G = sv("g", { class: "fam fam-" + (o.fam || "green") }, g);
+  const c = [[x, y], [x + w, y], [x + w, y + d], [x, y + d]];
+  sv("path", { class: "wire", d: D(c.map(p => [p[0], p[1], z + h])) + "Z" }, G);
+  [[x + w, y], [x + w, y + d], [x, y + d]].forEach(p => sv("path", { class: "wire", d: D([[p[0], p[1], z], [p[0], p[1], z + h]]) }, G));
+  for (let k = 1; k < 3; k++) sv("path", { class: "wire", d: D([[x, y + d, z + h * k / 3], [x + w, y + d, z + h * k / 3], [x + w, y, z + h * k / 3]]) }, G);
+  return G;
+}
+function cyl(g, cx, cy, r, h, o = {}){
+  const z = o.z || 0;
+  const G = sv("g", { class: "fam fam-" + (o.fam || "blue") + (o.cls ? " " + o.cls : "") }, g);
+  const t = iso(cx, cy, z + h), b = iso(cx, cy, z);
+  const rx = r * S * ISO_X * Math.SQRT2, ry = r * S * ISO_Y * Math.SQRT2;
+  track(t[0] - rx, t[1] - ry); track(b[0] + rx, b[1] + ry);
+  sv("path", { class: "fl", d: `M${(t[0] - rx).toFixed(1)},${t[1].toFixed(1)} L${(b[0] - rx).toFixed(1)},${b[1].toFixed(1)} A${rx.toFixed(1)},${ry.toFixed(1)} 0 0 0 ${(b[0] + rx).toFixed(1)},${b[1].toFixed(1)} L${(t[0] + rx).toFixed(1)},${t[1].toFixed(1)} Z` }, G);
+  sv("ellipse", { class: "ft", cx: t[0].toFixed(1), cy: t[1].toFixed(1), rx: rx.toFixed(1), ry: ry.toFixed(1) }, G);
+  return G;
+}
+function pile(g, x, y, w, d, h, o = {}){
+  const a = Math.min(2, w / 4), m = y + d / 2;
+  const G = sv("g", { class: "fam fam-" + (o.fam || "blue") }, g);
+  poly(G, [[x, y, 0], [x + w, y, 0], [x + w - a, m, h], [x + a, m, h]], "ft");
+  poly(G, [[x + a, m, h], [x + w - a, m, h], [x + w, y + d, 0], [x, y + d, 0]], "fl");
+  poly(G, [[x + w, y, 0], [x + w, y + d, 0], [x + w - a, m, h]], "fr");
+  return G;
+}
+function strip(g, pts, hw, cls, z = 0){
+  const G = sv("g", { class: cls }, g);
+  for (let i = 0; i < pts.length - 1; i++){
+    const [x1, y1] = pts[i], [x2, y2] = pts[i + 1];
+    const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy) || 1;
+    const nx = -dy / L * hw, ny = dx / L * hw, ex = dx / L * hw, ey = dy / L * hw;
+    poly(G, [[x1 - ex + nx, y1 - ey + ny, z], [x2 + ex + nx, y2 + ey + ny, z], [x2 + ex - nx, y2 + ey - ny, z], [x1 - ex - nx, y1 - ey - ny, z]]);
+  }
+  return G;
+}
+function plate(g, x, y, w, d, cls){ return poly(g, [[x, y], [x + w, y], [x + w, y + d], [x, y + d]], cls); }
+
+/* =====================================================================
+   Scene
+   ===================================================================== */
+const svg = $("scene");
+const defs = sv("defs", null, svg);
+const Lg = sv("g", { id: "lg" }, svg);        // ground
+const Ll = sv("g", { id: "ll" }, svg);        // data-store links
+const Lo = sv("g", { id: "lo" }, svg);        // depth-sorted objects
+const Lm = sv("g", { id: "lm" }, svg);        // movers
+const Lr = sv("g", { id: "lr" }, svg);        // route highlights
+const Lv = sv("g", { id: "lv" }, svg);        // pulses and markers
+const Lt = sv("g", { id: "lt" }, svg);        // labels
+const Li = sv("g", { id: "li" }, svg);        // inside-view labels
+
+const OBJ = {};   // id -> { side, name, nodes: [] }
+function reg(id, side, name){ return OBJ[id] = OBJ[id] || { id, side, name, nodes: [] }; }
+
+/* Routes in world units (axis-aligned so trucks can face along them) */
+const R = {
+  gas:       [[-10.5, 23.5, .6], [21, 23.5, .6], [21, 17.2, .6]],
+  inside:    [[21, 13.5, .4], [94, 13.5, .4], [97, 13.5, .4]],
+  tower:     [[96, 13.5], [102, 13.5], [102, -20], [67, -20], [67, -25]],
+  contractor:[[96, 13.5], [102, 13.5], [107, 13.5]],
+  plant2:    [[96, 13.5], [102, 13.5], [102, 30], [107, 30]],
+  export:    [[96, 13.5], [102, 13.5], [102, 41.7], [46.5, 41.7]],
+  inbound:   [[46.5, 41.7], [102, 41.7], [102, 13.5], [94, 13.5], [94, 22], [65, 22], [65, 19]],
+  p2tower:   [[107, 30], [102, 30], [102, -20], [67, -20], [67, -25]]
+};
+
+/* ---- ground ---- */
+const seaPts = [[-3, 44], [49, 44], [49, 58], [-3, 58]];
+poly(Lg, seaPts, "sea side-out");
+plate(Lg, -22, 17, 12, 12, "plate-out side-out");               // gas site
+plate(Lg, 58, -40, 18, 15, "plate-out side-out");               // tower site
+plate(Lg, 107, 6, 12, 10, "plate-out side-out");                // contractor yard
+plate(Lg, 107, 23, 18, 15, "plate-out side-out");               // plant 2
+plate(Lg, 0, 0, 96, 28, "plate-in side-in");                    // the plant
+strip(Lg, [[96, 13.5], [102, 13.5], [102, 41.7], [46.5, 41.7]], 1.1, "road side-out");
+strip(Lg, [[102, 13.5], [102, -20], [67, -20], [67, -25]], 1.1, "road side-out");
+strip(Lg, [[102, 13.5], [107, 13.5]], 1.1, "road side-out");
+strip(Lg, [[102, 30], [107, 30]], 1.1, "road side-out");
+strip(Lg, [[94, 13.5], [94, 22], [65, 22], [65, 19]], .8, "road inr side-in");
+strip(Lg, [[14, 13.5], [94, 13.5]], .45, "conv side-in");
+strip(Lg, [[8, 40], [8, 28]], .45, "conv out side-out");
+strip(Lg, [[8, 28], [8, 17]], .45, "conv side-in");
+sv("path", { class: "bracket side-in", d: D([[27, 4], [59, 4], [59, 23.5], [27, 23.5]]) + "Z" }, Lg);
+sv("path", { class: "pipe side-out", d: D(R.gas) }, Lg);
+sv("path", { class: "fence", d: D([[0, 0], [96, 0], [96, 11.6]]) + D([[96, 15.4], [96, 28], [0, 28], [0, 0]]).replace("M", " M") }, Lg);
+
+/* ---- depth-sorted objects ---- */
+const items = [];
+function item(id, side, name, key, draw){ items.push({ id, side, name, key, draw }); }
+
+// inside the fence
+item("pellet", "in", "Pellet yard", 19.5, g => { pile(g, 3, 5, 11, 12, 2.6); });
+item("dr", "in", "Direct reduction plant", 34, g => { box(g, 17, 9, 8, 8, 3); cyl(g, 21, 13, 2.6, 11, { z: 3 }); });
+function eaf(g, x, y){
+  box(g, x, y, 6, 6, 4.5);
+  const c = iso(x + 3, y + 3, 4.5);
+  sv("ellipse", { class: "glow", cx: c[0], cy: c[1], rx: 2.2 * S * ISO_X * Math.SQRT2, ry: 2.2 * S * ISO_Y * Math.SQRT2 }, g);
+  [[x + 2, y + 2.2], [x + 3.8, y + 2.2], [x + 2.9, y + 3.8]].forEach(p => box(g, p[0], p[1], .5, .5, 2.6, { z: 4.5, fam: "ink", cls: "thin" }));
+}
+item("eaf1", "in", "Electric arc furnace 1", 41, g => eaf(g, 29, 6));
+item("eaf2", "in", "Electric arc furnace 2", 50, g => eaf(g, 29, 15));
+item("ladle", "in", "Ladle furnace", 53.5, g => box(g, 38, 11, 4, 5, 3));
+item("caster", "in", "Continuous caster", 64.5, g => {
+  box(g, 45, 11, 12, 5, 2);
+  const G = sv("g", { class: "fam fam-blue" }, g);
+  // curved strand drawn on the front face
+  const pts = []; for (let i = 0; i <= 10; i++){ const a = i / 10 * Math.PI / 2; pts.push([47 + 6 * Math.sin(a), 16, 2 - 1.7 * (1 - Math.cos(a))]); }
+  pts.push([56, 16, .3]);
+  sv("path", { d: D(pts), style: "fill:none;stroke-width:2.2" }, G);
+});
+let fillBar;
+item("billets", "in", "Billet yard", 78.5, g => {
+  box(g, 61, 8, 8, 11, 1);
+  fillBar = sv("polygon", { class: "fillbar" }, g);
+});
+item("reheat", "in", "Reheating furnace", 86.5, g => { box(g, 71, 11, 4, 5, 3); cyl(g, 74, 12.2, .6, 4.5, { z: 3, cls: "thin" }); });
+item("rolling", "in", "Rolling mill", 97.8, g => { box(g, 77, 11, 15, 4.5, 2.4); });
+item("gate", "in", "Dispatch gate", 104, g => { box(g, 94.3, 8, 2.6, 2.6, 2.4); sv("path", { d: D([[96, 11.6, 1.2], [96, 15.4, 1.2]]), style: "stroke:var(--ink);stroke-width:2;stroke-linecap:round" }, g); });
+
+// outside
+item("gas", "out", "Gas supply", 7, g => { cyl(g, -18, 20.5, 2, 3.4, { fam: "green" }); box(g, -21.3, 24.5, 3.5, 3.5, 2, { fam: "green" }); cyl(g, -13.5, 25.5, 2, 3.4, { fam: "green" }); });
+item("quay", "out", "Quay", 60, g => { box(g, -2, 40, 48, 3.5, 1, { fam: "green" }); });
+item("export", "out", "Export vessel", 78, g => { vessel(g, 26, 46.5); });
+item("tower", "out", "Tower project A", 34, g => {
+  box(g, 61, -37, 7, 7, 11, { fam: "green" });
+  wirebox(g, 61, -37, 7, 7, 6, { z: 11 });
+  box(g, 70.4, -36, .7, .7, 24, { fam: "green", cls: "thin" });
+  const G = sv("g", { class: "fam fam-green" }, g);
+  sv("path", { d: D([[71.8, -35.6, 24], [57, -35.6, 24]]), style: "fill:none;stroke-width:2" }, G);
+  sv("path", { d: D([[64, -35.6, 24], [64, -35.6, 18.5]]), style: "fill:none;stroke-width:1" }, G);
+  box(g, 71.6, -36.2, 2, 1.2, 1, { z: 23.6, fam: "green", cls: "thin" });
+});
+item("contractor", "out", "Contractor B's yard", 124, g => {
+  [7.2, 9.3, 11.4].forEach(y => box(g, 109, y, 8.5, 1.3, .7, { fam: "green", cls: "thin" }));
+  box(g, 112.5, 13.2, 5, 2.4, 2.2, { fam: "green" });
+});
+item("plant2", "out", "Plant 2 (same group)", 146, g => {
+  sv("path", { class: "fence", style: "stroke-width:1.2;stroke-dasharray:4 3", d: D([[107.6, 23.6], [124.4, 23.6], [124.4, 37.4], [107.6, 37.4]]) + "Z" }, g);
+  box(g, 110, 26, 12, 3.5, 2.2, { fam: "green" });
+  box(g, 110, 32.5, 5.5, 3.5, 1, { fam: "green" });
+  box(g, 117.5, 32, 5.5, 4, 3.2, { fam: "green" });
+});
+function vessel(g, x, y){
+  const G = sv("g", { class: "fam fam-green" }, g);
+  poly(G, [[x, y + 3.6, 0], [x + 13.5, y + 3.6, 0], [x + 15.5, y + 1.8, 0], [x + 15.5, y + 1.8, 1.6], [x + 13.5, y + 3.6, 1.6], [x, y + 3.6, 1.6]], "fl");
+  poly(G, [[x + 13.5, y, 0], [x + 15.5, y + 1.8, 0], [x + 15.5, y + 1.8, 1.6], [x + 13.5, y, 1.6]], "fr");
+  poly(G, [[x, y, 1.6], [x + 13.5, y, 1.6], [x + 15.5, y + 1.8, 1.6], [x + 13.5, y + 3.6, 1.6], [x, y + 3.6, 1.6]], "ft");
+  box(g, x + .5, y + .4, 2.6, 2.8, 2.6, { z: 1.6, fam: "green" });
+  [4.5, 7.5, 10.5].forEach(dx => box(g, x + dx, y + .7, 2.2, 2.2, .5, { z: 1.6, fam: "green", cls: "thin" }));
+}
+
+// data stores: a row above the gas supply
+const STORE_POS = { erp: [-40, 10], sched: [-31, 1], hist: [-22, -8], gasn: [-13, -17], vessel: [-4, -26], notes: [5, -35] };
+DATA.sources.forEach(s => {
+  const [x, y] = STORE_POS[s.id];
+  item(s.id, "out", s.name, -30 + x * .001, g => { cyl(g, x, y, 2.4, 4.4, { fam: s.fam }); [1.5, 3].forEach(z => { const a = iso(x, y, z); sv("path", { class: "fam fam-" + s.fam, d: `M${a[0] - 2.4 * S * 1.2247},${a[1]} A${2.4 * S * 1.2247},${2.4 * S * .7071} 0 0 0 ${a[0] + 2.4 * S * 1.2247},${a[1]}`, style: "fill:none;stroke:color-mix(in srgb,var(--c) 80%,var(--ink));stroke-width:1" }, g); }); });
+});
+item("notes", "out", "Planners' notes", -29.9, g => {
+  const [x, y] = STORE_POS.notes;
+  const t = iso(x, y, 4.4), b = iso(x, y, 0), rx = 2.4 * S * 1.2247, ry = 2.4 * S * .7071;
+  track(t[0] - rx, t[1] - ry);
+  sv("path", { class: "notebox", d: `M${t[0] - rx},${t[1]} L${b[0] - rx},${b[1]} A${rx},${ry} 0 0 0 ${b[0] + rx},${b[1]} L${t[0] + rx},${t[1]}` }, g);
+  sv("ellipse", { class: "notebox", cx: t[0], cy: t[1], rx, ry }, g);
+  const c = iso(x, y, 2.2);
+  sv("path", { class: "notepaper", d: `M${c[0] - 6},${c[1] - 7} h8 l4 4 v10 h-12 Z` }, g);
+  sv("path", { d: `M${c[0] - 3},${c[1] - 1} h6 M${c[0] - 3},${c[1] + 2} h6`, style: "stroke:var(--ink2);stroke-width:1" }, g);
+});
+
+items.sort((a, b) => a.key - b.key).forEach(it => {
+  const o = reg(it.id, it.side, it.name);
+  const g = sv("g", { class: "obj side-" + it.side + (it.id in STORE_POS ? " storeg" : ""), "data-id": it.id }, Lo);
+  it.draw(g);
+  o.nodes.push(g); o.g = g;
+});
+{ const v = DATA.commitments.every(c => OBJ[c.party]); console.assert(v, "every commitment maps to a party in the scene"); window.__dataChecksPassed = window.__dataChecksPassed && v; }
+
+/* ---- ore vessel (moves towards the quay) ---- */
+const oreG = sv("g", { class: "obj side-out", "data-id": "ore" }, Lm);
+vessel(oreG, 1, 46.5);
+reg("ore", "out", "Ore vessel").nodes.push(oreG);
+const oreLbl = sv("text", { class: "lbl", "text-anchor": "middle" }, oreG, "Ore vessel");
+{ const p = iso(8.5, 50, 0); oreLbl.setAttribute("x", p[0]); oreLbl.setAttribute("y", p[1] + 18); }
+
+/* ---- labels ---- */
+function label(id, text, w, dx, dy, opt = {}){
+  const p = iso(w[0], w[1], w[2] || 0);
+  const t = sv("text", { class: "lbl " + (opt.cls || "") + (id ? " side-" + OBJ[id].side : ""), x: (p[0] + dx).toFixed(1), y: (p[1] + dy).toFixed(1), "text-anchor": opt.anchor || "middle", transform: opt.rot ? `rotate(${opt.rot} ${(p[0] + dx).toFixed(1)} ${(p[1] + dy).toFixed(1)})` : null }, opt.parent || Lt);
+  if (Array.isArray(text)) text.forEach((s, i) => sv("tspan", { x: (p[0] + dx).toFixed(1), dy: i ? "1.15em" : 0 }, t, s)); else t.textContent = text;
+  track(p[0] + dx - 60, p[1] + dy - 14); track(p[0] + dx + 60, p[1] + dy + 6);
+  if (id) OBJ[id].nodes.push(t);
+  return t;
+}
+// in-plant units: callouts in two rows along the fence, so no label sits on a unit
+function callout(id, text, top, row, opt = {}){
+  const yy = row === "n" ? -4.5 : 32;
+  const a = iso(top[0], top[1], top[2]), b = iso(top[0], yy, 0);
+  const ln = sv("path", { class: "leader side-in", d: `M${a[0].toFixed(1)},${a[1].toFixed(1)} L${b[0].toFixed(1)},${b[1].toFixed(1)}` }, Lt);
+  if (id) OBJ[id].nodes.push(ln);
+  const t = label(id, text, [top[0], yy, 0], opt.dx || 0, row === "n" ? -6 : 15, { anchor: opt.anchor || "middle", cls: opt.cls });
+  if (opt.also) OBJ[opt.also].nodes.push(ln, t);
+  if (opt.model) label(null, opt.model, [top[0], yy, 0], opt.dx || 0, row === "n" ? -21 : 30, { anchor: opt.anchor || "middle", cls: "tin inside-only", parent: Li });
+  return t;
+}
+callout("pellet", "Pellet yard", [8.5, 11, 2.6], "n");
+callout("dr", "Direct reduction", [21, 17, 1.5], "s", { model: "Gas and reduction control" });
+callout("eaf1", "Electric arc furnaces", [32, 6, 4.5], "n", { also: "eaf2", model: "Endpoint carbon model · Energy model" });
+callout("ladle", "Ladle furnace", [40, 16, 1.5], "s", { model: "Temperature model · Alloy yield model" });
+callout("caster", "Caster", [51, 11, 2], "n", { model: "Breakout prediction · Surface defect detection" });
+callout("billets", "Billet yard", [65, 19, .5], "s");
+callout("reheat", "Reheating furnace", [73, 11, 3], "n");
+callout("rolling", "Rolling mill", [84.5, 15.5, 1.2], "s");
+callout("gate", "Dispatch gate", [95.6, 8, 2.4], "n", { dx: 4, anchor: "end" });
+label(null, "Meltshop", [49, 21.5, 0], 0, 4, { cls: "lb tin side-in edge-only" });
+label(null, "Plant 1", [54, 27.3, 0], 0, 0, { anchor: "start", cls: "disp side-in edge-only", rot: 30 });
+label(null, "The plant's edge", [0, 16, 0], -8, -2, { anchor: "middle", cls: "edge side-in", rot: -30 });
+label("gas", "Gas supply", [-16, 29, 0], -4, 16, { cls: "lb", anchor: "end" });
+label("quay", "Port", [-2, 43.5, 0], -8, 6, { cls: "lb", anchor: "end" });
+label("export", "Export loading", [34, 50, 0], 0, 18, { cls: "lb" });
+label("tower", "Tower project A", [76, -40, 0], 4, 4, { cls: "lb", anchor: "start" });
+label("contractor", "Contractor B", [119, 16, 0], 0, 16, { cls: "lb", anchor: "middle" });
+label("plant2", "Plant 2 (same group)", [125, 38, 0], 0, 17, { cls: "lb", anchor: "end" });
+label(null, "Group transfer", [104.5, 30, 0], 0, -6, { cls: "side-out", rot: 30 });
+label(null, "Export route", [74, 41.7, 0], 0, 16, { cls: "side-out", rot: 30 });
+label(null, "Where each object lives today", [-22, -8, 4.4], 0, -30, { cls: "disp side-out" });
+const storeLabels = { erp: ["ERP"], sched: ["Meltshop", "scheduler"], hist: ["Historian"], gasn: ["Gas", "notices"], vessel: ["Vessel", "tracking"], notes: ["Planners'", "notes"] };
+Object.keys(STORE_POS).forEach(id => { const [x, y] = STORE_POS[id]; label(id, storeLabels[id], [x, y, 0], 0, 22); });
+
+/* ---- inside-view labels ---- */
+function tin(text, w, dx, dy, anchor){ const t = label(null, text, w, dx, dy, { anchor: anchor || "middle", cls: "tin inside-only", parent: Li }); return t; }
+label(null, "Meltshop scheduler", [49, 21.5, 0], 0, 4, { cls: "lb tin inside-only", parent: Li });
+tin("Control system on every unit", [92, 28, 0], 0, 40, "end");
+const ctlDots = sv("g", { class: "inside-only" }, Li);
+[[8.5, 11, 2.6], [21, 13, 3], [32, 9, 4.5], [32, 18, 4.5], [40, 13.5, 3], [51, 13.5, 2], [65, 13.5, 1], [73, 13.5, 3], [84.5, 13, 2.4], [95.6, 9.3, 2.4]].forEach(w => { const p = iso(w[0], w[1], w[2]); sv("rect", { x: p[0] - 3, y: p[1] - 3, width: 6, height: 6, transform: `rotate(45 ${p[0]} ${p[1]})`, style: "fill:var(--blue);stroke:var(--surface);stroke-width:1" }, ctlDots); });
+
+/* ---- data-store links ---- */
+const LINKS = [
+  ["erp", "tower", [64, -33, 8]], ["erp", "contractor", [113, 10, 1]], ["erp", "export", [33, 48, 2]], ["erp", "plant2", [116, 28, 2]], ["erp", "gate", [95.6, 9.3, 2.4]],
+  ["sched", "eaf1", [32, 9, 4.5]], ["sched", "eaf2", [32, 18, 4.5]], ["sched", "ladle", [40, 13.5, 3]], ["sched", "caster", [51, 13.5, 2]], ["sched", "rolling", [84.5, 13, 2.4]],
+  ["hist", "pellet", [8.5, 11, 2.6]], ["hist", "dr", [21, 13, 10]], ["hist", "billets", [65, 13.5, 1]], ["hist", "reheat", [73, 13.5, 3]],
+  ["gasn", "gas", [-16, 22, 3.4]],
+  ["vessel", "ore", [8, 48, 2]], ["vessel", "export", [33, 48, 2]], ["vessel", "quay", [10, 41.7, 1]],
+  ["notes", "tower", [61, -33, 9]], ["notes", "plant2", [112, 27, 2]]
+];
+const linkEls = LINKS.map(([s, o, w]) => {
+  const [x, y] = STORE_POS[s]; const a = iso(x, y, 0); const b = iso(w[0], w[1], w[2]);
+  const mid = [(a[0] + b[0]) / 2, Math.max(a[1], b[1]) + 10];
+  return { s, o, el: sv("path", { class: "link side-out", d: `M${a[0].toFixed(1)},${(a[1] + 2).toFixed(1)} Q${mid[0].toFixed(1)},${mid[1].toFixed(1)} ${b[0].toFixed(1)},${b[1].toFixed(1)}` }, Ll) };
+});
+const heldIn = id => LINKS.filter(l => l[1] === id).map(l => l[0]);
+
+/* ---- route highlights (previews and final outcome) ---- */
+const RT = {};
+["tower", "contractor", "export", "plant2", "p2tower", "inbound"].forEach(k => { RT[k] = sv("path", { class: "rt side-out", d: D(R[k]) }, Lr); });
+
+/* ---- status badges at the parties ---- */
+const BADGE_POS = { tower: [67, -25, 0, -16, 6], contractor: [107, 13.5, 0, 0, -16], export: [41.5, 48.3, 1.6, 8, -4], plant2: [107, 30, 0, 2, -16] };
+const badges = {};
+Object.keys(BADGE_POS).forEach(k => {
+  const [x, y, z, dx, dy] = BADGE_POS[k], p = iso(x, y, z);
+  const g = sv("g", { class: "badge side-out hidden", transform: `translate(${(p[0] + dx - 8).toFixed(1)},${(p[1] + dy - 8).toFixed(1)})` }, Lv);
+  badges[k] = { g, st: null };
+});
+function setBadge(k, st, pv){
+  const b = badges[k];
+  if (!st){ b.g.classList.add("hidden"); b.st = null; return; }
+  b.g.classList.remove("hidden"); b.g.classList.toggle("pv", !!pv);
+  if (b.st !== st){ b.g.textContent = ""; const s = sv("svg", { width: 16, height: 16, viewBox: "0 0 14 14", x: 0, y: 0 }, b.g); sv("rect", { x: -1, y: -1, width: 16, height: 16, rx: 3, style: "fill:var(--surface);stroke:none" }, s); statusIcon(st, 16, s); b.st = st; }
+}
+
+/* ---- meltshop stamp ---- */
+const stamp = sv("g", { class: "stamp hidden" }, Lv);
+{
+  const p = iso(43, 4, 0), q = iso(30, -19, 0);
+  sv("path", { d: `M${q[0]},${q[1]} L${p[0]},${p[1]}`, style: "stroke:var(--blue);stroke-width:1;stroke-dasharray:3 3" }, stamp);
+  // the pill is drawn in screen px and scaled with the labels (see fitText), so its text always fits
+  const box = sv("g", { class: "px" }, stamp); box.__at = q;
+  sv("rect", { x: -112, y: -12, width: 224, height: 24, rx: 12 }, box);
+  sv("path", { d: "M-100,0.5 l3.5,3.5 l7,-7.5" }, box);
+  stamp.__t = sv("text", { x: -84, y: 4.5, class: "lb" }, box, "Rebuilt by the meltshop scheduler");
+}
+
+/* ---- planner note on Plant 2 ---- */
+const pnote = sv("g", { class: "pnote side-out hidden" }, Lv);
+{
+  const p = iso(125, 26, 0);
+  const x = p[0] + 16, y = p[1] - 4;
+  const a = iso(122, 28, 2.2);
+  sv("line", { x1: a[0], y1: a[1], x2: x, y2: y + 28 }, pnote);
+  const box = sv("g", { class: "px" }, pnote); box.__at = [x, y + 28]; box.__w = 216;   // __w: keep inside the scene's right edge
+  pnote.__bg = sv("rect", { class: "bg", x: 0, y: -28, width: 216, height: 56, rx: 8 }, box);
+  sv("path", { class: "notepaper", d: "M10,-19 h8 l4 4 v11 h-12 Z" }, box);
+  sv("text", { class: "nt nh", x: 30, y: -10 }, box, DATA.plannerRejection.by);
+  sv("text", { class: "nt", x: 30, y: 6 }, box, DATA.plannerRejection.short);
+  sv("text", { class: "nt", x: 30, y: 21 }, box, "Expires " + DATA.plannerRejection.validTo);
+}
+
+/* ---- export laycan note ---- */
+const laycan = sv("text", { class: "lb laycan side-out hidden", "text-anchor": "middle" }, Lv, "Laycan moved " + DATA.scene.exportVessel.moved);
+{ const p = iso(34, 50, 0); laycan.setAttribute("x", p[0]); laycan.setAttribute("y", p[1] + 34); }
+
+/* ---- edge crossing markers ---- */
+function xmark(w, text, dx, dy, anchor){
+  const p = iso(w[0], w[1], w[2] || 0);
+  const g = sv("g", { class: "xmark hidden" }, Lv);
+  sv("circle", { cx: p[0], cy: p[1], r: 4 }, g);
+  sv("text", { x: p[0] + dx, y: p[1] + dy, "text-anchor": anchor }, g, text);
+  return g;
+}
+const xIn = xmark([0, 23.5, .6], "Enters the plant", -6, 20, "end");
+const xOut = xmark([96, 13.5, .4], "Leaves the plant", 30, -10, "start");
+
+/* ---- pulses ---- */
+const PULSE = {};
+["gas", "inside", "tower", "contractor"].forEach(k => {
+  const p = sv("path", { class: "pulse hidden", d: D(R[k]) }, Lv);
+  const halo = sv("circle", { class: "phalo hidden", r: 9 }, Lv);
+  const dot = sv("circle", { class: "pdot hidden", r: 4.5 }, Lv);
+  PULSE[k] = { p, halo, dot, len: 0, t0: 0, dur: 0, on: false };
+});
+
+/* ---- gas flow dot ---- */
+const gasPath = sv("path", { d: D(R.gas), style: "fill:none;stroke:none" }, Lm);
+const gasDot = sv("circle", { class: "gasdot side-out", r: 3.5 }, Lm);
+
+/* ---- trucks ---- */
+const TRUCKS = [];
+for (let i = 0; i < 8; i++){
+  const g = sv("g", { class: "ptrk side-out", style: "display:none" }, Lm);
+  const gx = sv("g", null, g), gy = sv("g", null, g);
+  box(gx, -1.4, -.65, 2.1, 1.3, 1.3, { fam: "ink", cls: "thin" }); box(gx, .8, -.6, .8, 1.2, 1.5, { fam: "ink", cls: "thin" });
+  box(gy, -.65, -1.4, 1.3, 2.1, 1.3, { fam: "ink", cls: "thin" }); box(gy, -.6, .8, 1.2, .8, 1.5, { fam: "ink", cls: "thin" });
+  TRUCKS.push({ g, gx, gy, on: false, route: null, segs: null, len: 0, d: 0, speed: 0, onDone: null });
+}
+function routeSegs(pts){ const segs = []; let L = 0; for (let i = 0; i < pts.length - 1; i++){ const a = pts[i], b = pts[i + 1]; const l = Math.hypot(b[0] - a[0], b[1] - a[1]); segs.push({ a, b, l, L0: L }); L += l; } return { segs, L }; }
+function spawnTruck(key, onDone){
+  const t = TRUCKS.find(t => !t.on); if (!t || reduced) { if (onDone) onDone(); return; }
+  const r = routeSegs(R[key]);
+  Object.assign(t, { on: true, segs: r.segs, len: r.L, d: 0, speed: 11 / 1000, onDone });
+  t.g.style.display = "";
+}
+
+/* ---- grid and framing (measured from what was drawn) ---- */
+tracking = false;
+const L0 = sv("g", { id: "l0" }); svg.insertBefore(L0, Lg);
+function measure(groups){
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  groups.forEach(g => { const b = g.getBBox(); if (!b.width) return; x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.width); y1 = Math.max(y1, b.y + b.height); });
+  return [x0, y0, x1 - x0, y1 - y0];
+}
+const PAD = 14;
+const padBox = (b, p) => [b[0] - p, b[1] - p, b[2] + p * 2, b[3] + p * 2];
+let VB_FULL = padBox(measure([Lg, Lo, Lm, Lt, Lv]), PAD);
+const VB_IN = (function(){
+  const c = [[-3, -12, 0], [104, -12, 0], [104, 38, 0], [-3, 38, 0], [21, 13, 22]].map(p => iso(p[0], p[1], p[2]));
+  const xs = c.map(p => p[0]), ys = c.map(p => p[1]);
+  return padBox([Math.min(...xs), Math.min(...ys), Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)], 24);
+})();
+const pat = sv("pattern", { id: "grid", width: 4 * S, height: 4 * S, patternUnits: "userSpaceOnUse", patternTransform: `matrix(${ISO_X} ${ISO_Y} ${-ISO_X} ${ISO_Y} 0 0)` }, defs);
+sv("path", { class: "gridline", d: `M0 0 H${4 * S} M0 0 V${4 * S}`, style: "opacity:.75" }, pat);
+sv("rect", { x: VB_FULL[0] - 600, y: VB_FULL[1] - 600, width: VB_FULL[2] + 1200, height: VB_FULL[3] + 1200, fill: "url(#grid)" }, L0);
+
+/* ---- legend: what moves along the lines (drawn in screen px, scaled with --u) ---- */
+const legend = sv("g", { class: "legend side-out", "aria-hidden": "true" }, svg);
+[["mat", "Material and trucks"], ["data", "Data link (hover a store)"], ["evt", "Effect of the event"]].forEach(([k, t], i) => {
+  const y = i * 19;
+  if (k === "mat") sv("path", { d: `M-178 ${y} h22`, style: "fill:none;stroke:color-mix(in srgb, var(--blue) 30%, var(--bg));stroke-width:6" }, legend);
+  if (k === "data") sv("path", { d: `M-178 ${y} h22`, style: "fill:none;stroke:var(--ink3);stroke-width:1.2;stroke-dasharray:3 3" }, legend);
+  if (k === "evt"){ sv("path", { d: `M-178 ${y} h18`, class: "pulse" }, legend); sv("circle", { cx: -157, cy: y, r: 3.5, class: "pdot" }, legend); }
+  sv("text", { x: -148, y: y + 4 }, legend, t);
+});
+
+let vb = VB_FULL.slice(), vbTween = null;
+function setVB(v){ vb = v; svg.setAttribute("viewBox", v.map(n => n.toFixed(1)).join(" ")); fitText(); }
+function fitText(){
+  const w = svg.clientWidth || 800, h = svg.clientHeight || 500;
+  const k = Math.min(w / vb[2], h / vb[3]);
+  const u = Math.max(.7, Math.min(1.45, 1 / k));
+  svg.style.setProperty("--u", u.toFixed(3));
+  legend.setAttribute("transform", `translate(${(vb[0] + vb[2] - 4).toFixed(1)} ${(vb[1] + 12 * u).toFixed(1)}) scale(${u.toFixed(3)})`);
+  document.querySelectorAll("#scene .px").forEach(g => {
+    const x = g.__w ? Math.min(g.__at[0], vb[0] + vb[2] - (g.__w + 4) * u) : g.__at[0];
+    g.setAttribute("transform", `translate(${x.toFixed(1)} ${g.__at[1].toFixed(1)}) scale(${u.toFixed(3)})`);
+  });
+}
+setVB(VB_FULL);
+VB_FULL = padBox(measure([Lg, Lo, Lm, Lt, Lv]), PAD); setVB(VB_FULL);
+if (window.ResizeObserver) new ResizeObserver(fitText).observe(svg); else window.addEventListener("resize", fitText);
+
+/* =====================================================================
+   State
+   ===================================================================== */
+const state = {
+  run: 1, act: 1, paused: false,
+  chosen: null,
+  statuses: {}, preview: null,
+  gasPct: 100, gasSlow: false, stock: DATA.plant.freeBilletStock_t, stockAnim: null,
+  stamp: false, banner: false, kpiEvent: false, act2Text: false, act2Order: false, final: false, laycan: false,
+  gasNotice: false, notesRow: false,
+  plannerNote: false,          // persists across runs
+  memory: [],                  // { opt, by: "planner" | "you", reason, run }
+  runRej: {},                  // this run's viewer rejections: opt -> reason
+  bRejectedThisRun: false, review: null, locked: true, override: {},
+  inside: false, maxAct: 1, hintT: 0
+};
+const runRows = {};   // run -> live ledger row
+const row = () => runRows[state.run] || (runRows[state.run] = { run: state.run, id: state.run === 1 ? DATA.event.id : DATA.event.id + "-R" + state.run, stages: 0, chosen: null, rejected: [], late: null, time: null, fresh: true });
+
+let clock = 0, actT = 0, runClock = 0, cues = [], truckTimer = 0, truckFlip = 0, act4Trucks = null;
+
+function resetStatuses(after){ DATA.commitments.forEach(c => { state.statuses[c.id] = after ? DATA.statusAfterEvent[c.id] : "ok"; }); }
+function clearTransient(){
+  Object.values(PULSE).forEach(p => { p.on = false; [p.p, p.dot, p.halo].forEach(e => { e.classList.add("hidden"); e.classList.remove("fade"); }); });
+  [xIn, xOut].forEach(e => e.classList.add("hidden"));
+  TRUCKS.forEach(t => { t.on = false; t.g.style.display = "none"; });
+  act4Trucks = null; truckTimer = 0;
+  state.stockAnim = null; state.preview = null;
+}
+function baseline(n){
+  const after = n >= 3;
+  resetStatuses(after);
+  state.gasPct = after ? DATA.event.gasPct : 100; state.gasSlow = after;
+  state.stock = after ? 0 : DATA.plant.freeBilletStock_t;
+  state.stamp = after; state.banner = false; state.kpiEvent = after; state.act2Text = after; state.act2Order = after;
+  state.final = false; state.laycan = false; state.gasNotice = n >= 2;
+  state.review = state.bRejectedThisRun ? "rejected" : null;
+  state.locked = !(state.run >= 2 || state.bRejectedThisRun || state.chosen);
+  setDim(false);
+  if (n >= 2) row();
+  if (n === 4 && state.chosen) applyOutcome(state.chosen, true);
+}
+function actScale(n){ return state.run >= 2 && n <= 2 ? 0.6 : 1; }
+
+function enterAct(n){
+  clearTransient();
+  state.act = n; actT = 0; state.maxAct = Math.max(state.maxAct, n);
+  baseline(n);
+  cues = buildCues(n);
+  runCues();
+  render();
+  announce(["", "Act 1: a normal day", "Act 2: the edge event", "Act 3: the decision", "Act 4: recorded"][n]);
+}
+function buildCues(n){
+  const k = actScale(n), list = [];
+  const c = (t, fn) => list.push({ at: t * k, fn, done: false });
+  if (n === 1){
+    if (runRows[state.run] && !state.chosen) runRows[state.run].stages = 0;
+    c(8000, () => enterAct(2));
+  }
+  if (n === 2){
+    c(0, () => { state.banner = true; setDim(true); const r = row(); r.stages = Math.max(r.stages, 1); pingStore("gasn"); });
+    c(1000, () => { startPulse("gas", 3000 * k); flashMark(xIn, 2600 * k, 2200 * k); state.gasSlow = true; });
+    c(4000, () => { state.gasPct = DATA.event.gasPct; startPulse("inside", 3000 * k); });
+    c(5200, () => { state.stamp = true; animateStock(0, 1600 * k); });
+    c(7000, () => { setDim(false); state.act2Order = true; row().stages = Math.max(row().stages, 2); flashMark(xOut, 0, 2600 * k); startPulse("tower", 2500 * k); startPulse("contractor", 3500 * k); });
+    c(9500, () => { state.statuses["C-118"] = DATA.statusAfterEvent["C-118"]; flashRow("C-118"); });
+    c(10500, () => { state.statuses["C-121"] = DATA.statusAfterEvent["C-121"]; flashRow("C-121"); });
+    c(11000, () => { state.kpiEvent = true; state.act2Text = true; });
+    c(18000, () => enterAct(3));
+  }
+  if (n === 3){
+    c(0, () => { const r = row(); r.stages = Math.max(r.stages, 3); });
+    if (state.run === 1 && !state.bRejectedThisRun && !state.chosen){
+      c(2000, () => { state.review = "sent"; });
+      c(3500, () => { state.plannerNote = true; state.review = "note"; state.notesRow = true; });
+      c(5000, () => {
+        state.review = "rejected"; state.bRejectedThisRun = true;
+        if (!state.memory.some(m => m.by === "planner")) state.memory.push({ opt: "B", by: "planner", reason: DATA.plannerRejection.reason, run: state.run });
+      });
+      c(7000, () => { state.locked = false; announce("Options A and C are open. Choose a response."); });
+    }
+  }
+  if (n === 4){
+    c(1200, () => { const r = row(); r.stages = 5; r.fresh = false; });
+  }
+  return list;
+}
+function runCues(){
+  for (const q of cues){ if (!q.done && actT >= q.at){ q.done = true; q.fn(); if (cues.indexOf(q) === -1) return; } }
+}
+
+function choose(id){
+  if (state.act !== 3 || state.locked || state.chosen) return;
+  const s = optState(id); if (s.blocked) return;
+  state.chosen = id;
+  const r = row();
+  r.chosen = id; r.rejected = rejectedList(id); r.late = optById(id).tonnesLate; r.override = state.override[id] || null;
+  r.time = state.run === 1 ? DATA.timeToDecision.run1 : DATA.timeToDecision.run2;
+  r.stages = Math.max(r.stages, 4);
+  // keep viewer reasons for later runs
+  Object.keys(state.runRej).forEach(o => { if (o !== id) state.memory.push({ opt: o, by: "you", reason: state.runRej[o], run: state.run }); });
+  enterAct(4);
+  startOutcomeMotion(id);
+}
+function applyOutcome(id){
+  const o = optById(id);
+  Object.assign(state.statuses, o.outcome);
+  state.final = true; state.laycan = id === "A";
+  if (id === "C") state.stock = Math.min(DATA.scene.billetBarCapacity_t, o.spotBillets_t);
+}
+function startOutcomeMotion(id){
+  if (id === "C"){ state.stock = 0; spawnTruck("inbound", () => animateStock(optById("C").spotBillets_t, 1200)); }
+  if (id === "B") spawnTruck("p2tower");
+  act4Trucks = id === "A" ? ["tower", "contractor"] : id === "B" ? ["contractor", "p2tower"] : ["tower", "contractor"];
+  truckTimer = 900;
+}
+
+function rejectedList(chosen){
+  const list = [];
+  if (state.run === 1 && state.bRejectedThisRun) list.push("B: " + DATA.plannerRejection.short + " (" + DATA.plannerRejection.by + ")");
+  if (state.run >= 2) flagsFor().forEach(f => { if (f.opt !== chosen) list.push(f.opt + ": " + (f.by === "planner" ? "flagged by planner note" : "flagged by your note: " + shortReason(f.reason))); });
+  Object.keys(state.runRej).forEach(o => { if (o !== chosen) list.push(o + ": " + shortReason(state.runRej[o]) + " (you)"); });
+  return list;
+}
+const shortReason = r => r === "Other" ? "another reason" : r;
+function flagsFor(){
+  // notes recorded in earlier runs; the latest per option wins
+  const m = {};
+  state.memory.filter(e => e.run < state.run).forEach(e => { m[e.opt] = e; });
+  return Object.values(m);
+}
+function optState(id){
+  const s = { id, review: false, plannerRej: false, flag: null, viewerRej: state.runRej[id] || null, blocked: false, chosen: state.chosen === id };
+  if (state.run === 1 && id === "B"){
+    if (state.review === "sent" || state.review === "note") s.review = true;
+    if (state.review === "rejected" || state.bRejectedThisRun) s.plannerRej = true;
+  }
+  if (state.run >= 2){ const f = flagsFor().find(f => f.opt === id); if (f) s.flag = f; }
+  s.blocked = state.locked || s.plannerRej || !!s.viewerRej || (s.flag && !state.override[id]) || !!state.chosen;
+  return s;
+}
+
+/* ---- small effects ---- */
+function setDim(on){ $("leftPanel").classList.toggle("dim", on); $("rightPanel").classList.toggle("dim", on); }
+function pingStore(id){ const g = OBJ[id].g; g.classList.remove("ping"); void g.getBBox(); g.classList.add("ping"); setTimeout(() => g.classList.remove("ping"), 2200); }
+const marks = [];
+function flashMark(el, delay, dur){ marks.push({ el, on: clock + delay, off: clock + delay + dur }); }
+const flashQueue = new Set();
+function flashRow(id){ flashQueue.add(id); }
+function animateStock(to, dur){ state.stockAnim = { from: state.stock, to, t0: clock, dur: reduced ? 1 : dur }; }
+function startPulse(k, dur){
+  const p = PULSE[k]; p.on = true; p.t0 = clock; p.dur = dur; p.len = p.p.getTotalLength();
+  p.p.classList.remove("hidden", "fade");
+  p.p.style.strokeDasharray = p.len + " " + p.len;
+  p.p.style.strokeDashoffset = reduced ? 0 : p.len;
+  if (!reduced){ p.dot.classList.remove("hidden"); p.halo.classList.remove("hidden"); }
+}
+let liveT = null;
+function announce(msg){ clearTimeout(liveT); liveT = setTimeout(() => { $("live").textContent = msg; }, 60); }
+
+/* =====================================================================
+   Frame loop
+   ===================================================================== */
+let last = performance.now();
+function frame(now){
+  const dt = Math.min(now - last, 100); last = now;
+  if (!state.paused){
+    clock += dt; actT += dt; runClock += dt;
+    runCues();
+    tick(dt);
+  }
+  // viewBox tween for the inside view: a response to a click, so it runs even while paused
+  if (vbTween){ const t = Math.min(1, (now - vbTween.t0) / vbTween.dur), e = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; setVB(vbTween.from.map((a, i) => a + (vbTween.to[i] - a) * e)); if (t >= 1) vbTween = null; }
+  requestAnimationFrame(frame);
+}
+let lastRender = 0;
+function tick(dt){
+  // pulses
+  for (const k in PULSE){
+    const p = PULSE[k]; if (!p.on) continue;
+    const f = Math.min(1, (clock - p.t0) / p.dur);
+    if (!reduced){
+      p.p.style.strokeDashoffset = (p.len * (1 - f)).toFixed(1);
+      const pt = p.p.getPointAtLength(p.len * f);
+      p.dot.setAttribute("cx", pt.x); p.dot.setAttribute("cy", pt.y);
+      p.halo.setAttribute("cx", pt.x); p.halo.setAttribute("cy", pt.y);
+      p.halo.setAttribute("r", 7 + 4 * Math.sin(clock / 120));
+    }
+    if (f >= 1){
+      p.dot.classList.add("hidden"); p.halo.classList.add("hidden");
+      if (clock - p.t0 > p.dur + 500 && !p.p.classList.contains("fade")) p.p.classList.add("fade");
+      if (clock - p.t0 > p.dur + 1500){ p.on = false; p.p.classList.add("hidden"); }
+    }
+  }
+  // edge markers
+  for (let i = marks.length - 1; i >= 0; i--){ const m = marks[i]; m.el.classList.toggle("hidden", !(clock >= m.on && clock < m.off)); if (clock >= m.off) marks.splice(i, 1); }
+  // gas dot
+  const gl = gasPath.getTotalLength();
+  const speed = state.gasSlow ? 0.006 : 0.02;   // world-ish px per ms
+  const gp = reduced ? gl * .4 : (clock * speed) % gl;
+  const gpt = gasPath.getPointAtLength(gp);
+  gasDot.setAttribute("cx", gpt.x); gasDot.setAttribute("cy", gpt.y);
+  // ore vessel approaches the quay over ~30 s of each run
+  const f = reduced ? 1 : Math.min(1, runClock / 30000);
+  const off = (1 - f) * 14; const v = iso(0, off, 0);
+  oreG.setAttribute("transform", `translate(${v[0].toFixed(1)},${v[1].toFixed(1)})`);
+  // stock tween
+  if (state.stockAnim){ const a = state.stockAnim, t = Math.min(1, (clock - a.t0) / a.dur); state.stock = a.from + (a.to - a.from) * t; if (t >= 1) state.stockAnim = null; }
+  const frac = Math.max(0, Math.min(1, state.stock / DATA.scene.billetBarCapacity_t));
+  fillBar.setAttribute("points", P([[61.6, 9, 1.02], [61.6 + 6.8 * frac, 9, 1.02], [61.6 + 6.8 * frac, 18, 1.02], [61.6, 18, 1.02]]));
+  // trucks
+  if (state.act === 1 && !reduced){ truckTimer -= dt; if (truckTimer <= 0){ truckTimer = 2600; spawnTruck(truckFlip++ % 2 ? "contractor" : "tower"); } }
+  if (state.act === 4 && act4Trucks && !reduced){ truckTimer -= dt; if (truckTimer <= 0){ truckTimer = 2600; spawnTruck(act4Trucks[truckFlip++ % act4Trucks.length]); } }
+  for (const t of TRUCKS){
+    if (!t.on) continue;
+    t.d += t.speed * dt;
+    if (t.d >= t.len){ t.on = false; t.g.style.display = "none"; if (t.onDone) t.onDone(); continue; }
+    const s = t.segs.find(s => t.d <= s.L0 + s.l) || t.segs[t.segs.length - 1];
+    const u = (t.d - s.L0) / s.l, x = s.a[0] + (s.b[0] - s.a[0]) * u, y = s.a[1] + (s.b[1] - s.a[1]) * u;
+    const alongX = Math.abs(s.b[0] - s.a[0]) > Math.abs(s.b[1] - s.a[1]);
+    t.gx.style.display = alongX ? "" : "none"; t.gy.style.display = alongX ? "none" : "";
+    const q = iso(x, y, 0); t.g.setAttribute("transform", `translate(${q[0].toFixed(1)},${q[1].toFixed(1)})`);
+  }
+  // light re-render a few times a second for ticking values
+  if (clock - lastRender > 250){ lastRender = clock; render(); }
+}
+
+/* =====================================================================
+   Rendering
+   ===================================================================== */
+const ACTS = ["A normal day", "The edge event", "The decision", "Recorded"];
+function renderHeader(){
+  const st = $("stepper");
+  if (!st.children.length) ACTS.forEach((a, i) => { const b = hx("button", { class: "step", type: "button", "data-act": i + 1 }, st, `<span class="n">${i + 1}</span><span class="lbl">${a}</span>`); b.addEventListener("click", () => goTo(i + 1)); });
+  [...st.children].forEach((b, i) => {
+    const n = i + 1;
+    if (n === state.act) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
+    b.classList.toggle("done", n < state.act || (n === 4 && !!state.chosen));
+    b.setAttribute("aria-label", "Act " + n + ": " + ACTS[i]);
+  });
+  const pb = $("playBtn");
+  const pIcon = state.paused ? '<svg viewBox="0 0 12 12"><path d="M2 1 L11 6 L2 11Z" fill="currentColor"/></svg>' : '<svg viewBox="0 0 12 12"><rect x="2" y="1" width="3" height="10" fill="currentColor"/><rect x="7" y="1" width="3" height="10" fill="currentColor"/></svg>';
+  const pText = state.paused ? "Play" : "Pause";
+  if (pb.dataset.s !== pText){ pb.innerHTML = pIcon + pText; pb.dataset.s = pText; pb.setAttribute("aria-label", pText); }
+  const rb = $("replayBtn");
+  const rText = state.chosen ? "Replay (Run " + (state.run + 1) + ")" : "Restart";
+  if (rb.dataset.s !== rText){ rb.innerHTML = '<svg viewBox="0 0 12 12"><path d="M2.5 6a3.5 3.5 0 1 0 1-2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M1.5 1.5 V4.5 H4.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>' + rText; rb.dataset.s = rText; rb.classList.toggle("primary", !!state.chosen && state.act === 4); }
+  const rl = state.run === 1 ? "<b>Run 1</b>" : `<b>Run ${state.run}:</b> the same event, with what the system kept`;
+  if ($("runLbl").innerHTML !== rl) $("runLbl").innerHTML = rl;
+  // KPIs
+  const okN = DATA.commitments.filter(c => state.statuses[c.id] === "ok").length;
+  // Before a decision: tonnes at risk (miss, risk, late). After it: only what is confirmed late.
+  const risk = DATA.commitments.filter(c => (state.final ? ["miss", "late"] : ["miss", "risk", "late"]).includes(state.statuses[c.id])).reduce((a, c) => a + c.tonnes, 0);
+  const out = state.kpiEvent ? DATA.plant.normalOutput_tPerDay * DATA.event.gasPct / 100 : DATA.plant.normalOutput_tPerDay;
+  const html = `<span class="kpi">Output <b>${fmt(out)} t/day</b></span>` +
+    `<span class="kpi${okN < 4 ? " warn" : ""}">Orders on track <b>${okN}/4</b></span>` +
+    (state.kpiEvent ? `<span class="kpi">${state.final ? "Initial shortfall" : "Shortfall"} <b>${fmt(DATA.event.shortfall_t)} t</b></span>` : "") +
+    `<span class="kpi${risk ? " warn" : ""}">${state.final ? "Tonnes late" : "Tonnes at risk"} <b>${fmt(risk)}</b></span>`;
+  if ($("kpis").innerHTML !== html) $("kpis").innerHTML = html;
+  const seg = $("viewSeg");
+  seg.hidden = !(state.act >= 2 || state.run >= 2);
+  [...seg.querySelectorAll("button")].forEach(b => b.setAttribute("aria-pressed", String((b.dataset.view === "inside") === state.inside)));
+}
+
+function renderLeft(){
+  const ul = $("commits");
+  const pv = state.preview ? optById(state.preview) : null;
+  if (!ul.children.length) DATA.commitments.forEach(c => {
+    const li = hx("li", { class: "commit", "data-id": c.id, "data-party": c.party }, ul);
+    hx("span", { class: "ic" }, li);
+    hx("div", { class: "who" }, li, `<span>${c.customer}</span><span class="st"></span>`);
+    hx("div", { class: "meta" }, li, `${c.product} · ${fmt(c.tonnes)} t · ${c.due}`);
+    li.addEventListener("pointerenter", () => focusObjects([c.party]));
+    li.addEventListener("pointerleave", unfocus);
+  });
+  [...ul.children].forEach(li => {
+    const c = commitById(li.dataset.id);
+    const st = pv ? pv.outcome[c.id] : state.statuses[c.id];
+    const key = st + (pv ? "p" : "");
+    if (li.dataset.k !== key){
+      const ic = li.querySelector(".ic"); ic.textContent = ""; ic.appendChild(statusIcon(st, 16));
+      li.querySelector(".st").textContent = (pv ? "→ " : "") + statusWord(st, c);
+      li.dataset.k = key;
+      li.classList.toggle("pv", !!pv);
+    }
+    if (flashQueue.has(c.id)){ li.classList.remove("flash"); void li.offsetWidth; li.classList.add("flash"); flashQueue.delete(c.id); }
+  });
+  $("pvNote").hidden = !pv;
+  // sources
+  const ss = $("sources");
+  const mins = Math.floor(clock / 20000);
+  const rows = DATA.sources.map(s => {
+    if (s.id === "gasn" && state.gasNotice) return `<li class="src new"><span class="dot" style="background:var(--${s.fam})"></span><span>${s.name}</span><span class="t">New notice ${DATA.event.receivedAt.split(" ")[1]}</span></li>`;
+    const m = s.ago + mins;
+    return `<li class="src"><span class="dot" style="background:var(--${s.fam})"></span><span>${s.name}</span><span class="t">Updated ${m} min ago</span></li>`;
+  });
+  if (state.plannerNote) rows.push(`<li class="src note new"><span class="dot"></span><span>Planners' notes</span><span class="t">1 note, from ${DATA.event.id}</span></li>`);
+  const h = rows.join("");
+  if (ss.innerHTML !== h) ss.innerHTML = h;
+}
+
+let rightSig = "";
+function renderRight(){
+  const rp = $("rightPanel");
+  const sig = JSON.stringify([state.act, state.run, state.act2Text, state.act2Order, state.statuses, state.review, state.locked, state.runRej, state.override, state.chosen, state.memory.length, state.inside]);
+  if (sig === rightSig) return;
+  rightSig = sig;
+  const focused = document.activeElement && rp.contains(document.activeElement) ? (document.activeElement.closest(".opt") || {}).dataset : null;
+  const focusId = focused ? focused.id : null;
+  const focusCls = document.activeElement && rp.contains(document.activeElement) ? document.activeElement.className : null;
+  rp.textContent = "";
+  const card = hx("div", { class: "card" }, rp);
+  if (state.act === 1){
+    hx("h2", { id: "rh", tabindex: "-1" }, card, "A normal day");
+    hx("p", { class: "lead" }, card, "A fictional Gulf steel mill and the parties at its edge. The plant's own systems run the inside. Watch what happens when something outside changes.");
+  } else if (state.act === 2){
+    hx("h2", { id: "rh", tabindex: "-1" }, card, "The edge event");
+    hx("div", { class: "evt" }, card, `<div class="k">Gas notice ${DATA.event.id} · ${DATA.event.receivedAt}</div><div class="v">Allocation reduced to ${DATA.event.gasPct}% for ${DATA.event.hours} h</div>`);
+    if (state.act2Text){
+      const lostPct = 100 - DATA.event.gasPct, days = DATA.event.hours / 24;
+      hx("div", { class: "calc", title: `${lostPct}% of ${fmt(DATA.plant.normalOutput_tPerDay)} t/day for ${days} days` }, card,
+        `<span>Lost output <b>${fmt(DATA.event.lostOutput_t)} t</b></span><span>− free stock <b>${fmt(DATA.plant.freeBilletStock_t)} t</b></span><span class="eq">= ${fmt(DATA.event.shortfall_t)} t short</span>`);
+    }
+    if (state.act2Order) card.appendChild(rollingOrder(null, "Rolling order this week"));
+    if (state.act2Text){
+      hx("p", null, card, "The meltshop has already adjusted. Who gets the steel that is now short is decided across the plant's edge, today in meetings over one to three days.");
+      const b = hx("button", { class: "linkbtn", type: "button" }, hx("p", null, card), "See what the plant's own systems handle");
+      b.addEventListener("click", () => setInside(true));
+    }
+  } else if (state.act === 3){
+    hx("h2", { id: "rh", tabindex: "-1" }, card, "Three feasible responses");
+    // kept above the cards so it stays in view when Run 2's flagged cards fill the panel
+    hx("p", { class: "quiet top" }, card, "A planner decides. The system never writes to plant control systems.");
+    hx("p", { class: "hint", id: "hint", hidden: "" }, card, "Choose a response to continue.");
+    const list = hx("div", { class: "opts", id: "opts", role: "list", "aria-label": "Responses", "aria-busy": String(state.locked) }, card);
+    let order = DATA.options.map(o => o.id);
+    // Run 2: unflagged first, then options flagged by the viewer's notes, then the planner's (B last)
+    if (state.run >= 2){ const rank = id => { const f = flagsFor().find(f => f.opt === id); return !f ? 0 : f.by === "planner" ? 2 : 1; }; order.sort((a, b) => rank(a) - rank(b)); }
+    order.forEach(id => list.appendChild(optCard(id)));
+    if (state.run === 1 && state.review === "rejected") hx("p", { class: "learn" }, card, "Option B looked best on cost. A planner knew why it would fail.");
+  } else {
+    hx("h2", { id: "rh", tabindex: "-1" }, card, "Recorded");
+    const o = optById(state.chosen);
+    hx("div", { class: "evt", style: "border-left-color:var(--ink)" }, card, `<div class="k">Chosen</div><div class="v">${o.id}: ${o.title}</div>`);
+    hx("p", null, card, act4Text());
+    card.appendChild(rollingOrder(o, "Rolling order now"));
+    const b = hx("button", { class: "btn primary replaybig", type: "button" }, card, `Replay (Run ${state.run + 1})`);
+    b.addEventListener("click", replay);
+    if (!state.inside){ const l = hx("button", { class: "linkbtn", type: "button", style: "margin-left:12px" }, card, "Inside view"); l.addEventListener("click", () => setInside(true)); }
+  }
+  if (focusId){ const c = rp.querySelector(`.opt[data-id="${focusId}"]`); if (c){ const inner = focusCls && c.querySelector("." + String(focusCls).split(" ").pop()); (inner && !inner.disabled ? inner : c).focus({ preventScroll: true }); } }
+}
+
+function act4Text(){
+  if (state.run === 1) return `Decision recorded with its reason, ${DATA.timeToDecision.run1.replace("min", "minutes")} after the gas notice in plant time (simulated). Replay to see what the system kept.`;
+  let t = `Decision recorded, ${DATA.timeToDecision.run2.replace("min", "minutes")} after the gas notice.`;
+  const out = flagsFor().map(f => f.opt).filter(o => o !== state.chosen).sort();
+  if (state.override[state.chosen]) t += ` Option ${state.chosen} was chosen over its note, and the reason is recorded.`;
+  else if (out.length) t += out.length === 1 ? ` Option ${out[0]} was ruled out before anyone asked.` : ` Options ${out.join(" and ")} were ruled out before anyone asked.`;
+  return t;
+}
+// The rolled orders in sequence, with status and where the shortfall lands. opt = null shows the plan after the event.
+function rollingOrder(opt, heading){
+  const wrap = hx("div");
+  hx("div", { class: "subh" }, wrap, heading);
+  const ol = hx("ol", { class: "roll" }, wrap);
+  const ord = opt ? opt.rollingOrder : DATA.rollingOrder;
+  const notes = opt ? opt.rowNotes : { "C-118": fmt(DATA.event.shortfall_t) + " t short: rolled after the wire rod, inside the gas cut" };
+  ord.forEach((cid, i) => {
+    const c = commitById(cid), st = opt ? opt.outcome[cid] : state.statuses[cid];
+    const li = hx("li", null, ol, `<span class="n">${i + 1}</span><span class="c">${c.campaign}</span><span class="d">due ${c.due.split(" ")[0]}</span>`);
+    const ic = statusIcon(st, 14); ic.setAttribute("role", "img"); ic.setAttribute("aria-label", statusWord(st, c)); li.appendChild(ic);
+    if (notes[cid] && (opt || st !== "ok")) hx("span", { class: "rn" }, li, notes[cid]);
+  });
+  return wrap;
+}
+
+function optCard(id){
+  const o = optById(id), s = optState(id);
+  const readOnly = !!state.chosen;
+  const cls = ["opt"]; if (s.review) cls.push("review"); if (s.plannerRej || s.viewerRej) cls.push("rej"); if (s.flag) cls.push("flag"); if (s.chosen) cls.push("chosen");
+  const el = hx("article", { class: cls.join(" "), "data-id": id, role: "listitem", tabindex: state.locked ? "-1" : "0", "aria-label": `Option ${id}: ${o.title}. ${fmt(o.tonnesLate)} t late, ${o.extraCost_kUSD} thousand dollars extra.` });
+  const oh = hx("div", { class: "oh" }, el);
+  hx("h3", null, oh, `<span class="id">${id}</span>${o.title}`);
+  const shapes = hx("div", { class: "shapes", "aria-label": "Outcome for the four orders" }, oh);
+  DATA.commitments.forEach(c => { const ic = statusIcon(o.outcome[c.id], 13); const t = sv("title", null, null, c.customer + ": " + statusWord(o.outcome[c.id], c)); ic.insertBefore(t, ic.firstChild); shapes.appendChild(ic); });
+  hx("div", { class: "figs" }, el, `<div><b>${fmt(o.tonnesLate)} t</b><span>late</span></div><div><b>$${o.extraCost_kUSD}k</b><span>extra cost</span></div><div><b>${o.energy}</b><span>energy</span></div>`);
+  if (o.tag && !s.plannerRej && !s.flag) hx("span", { class: "otag" }, el, o.tag);
+
+  if (s.review) hx("div", { class: "ostate" }, el, "Sent to Plant 2 planner for review");
+  if (s.plannerRej) hx("div", { class: "ostate" }, el, `Rejected by ${DATA.plannerRejection.by}: ${DATA.plannerRejection.short} for a roll change`);
+  if (s.flag) hx("div", { class: "ostate", style: "color:var(--ink)" }, el, s.flag.by === "planner"
+    ? `Conflicts with planner note: ${DATA.plannerRejection.short} (${DATA.event.id}, valid to ${DATA.plannerRejection.validTo})`
+    : (s.flag.reason === "Other" ? `Rejected in ${DATA.event.id} for another reason` : `Conflicts with your note: ${s.flag.reason} (${DATA.event.id})`));
+  if (s.flag && state.override[id]) hx("div", { class: "ostate" }, el, "Overridden by you: " + shortReason(state.override[id]));
+  if (s.viewerRej) hx("div", { class: "ostate" }, el, "Rejected by you: " + shortReason(s.viewerRej));
+  if (s.chosen) hx("div", { class: "ostate" }, el, "Chosen");
+  const act = hx("div", { class: "oact" }, el);
+  if (state.locked && !readOnly){
+    hx("span", { class: "lock" }, act, "Under review");
+  } else if (!readOnly){
+    if (s.viewerRej){
+      const u = hx("button", { class: "linkbtn", type: "button" }, act, "Undo");
+      u.addEventListener("click", () => { delete state.runRej[id]; render(); });
+    } else if (!s.plannerRej){
+      const cb = hx("button", { class: "sbtn choose", type: "button" }, act, "Choose");
+      cb.disabled = s.blocked;
+      cb.addEventListener("click", () => choose(id));
+      const rb = hx("button", { class: "sbtn reject", type: "button" }, act, "Reject with a reason");
+      rb.addEventListener("click", () => openReasons(el, id));
+      if (s.flag && !state.override[id]){ const ov = hx("button", { class: "linkbtn", type: "button" }, act, "Override"); ov.addEventListener("click", () => openReasons(el, id, "override")); }
+    }
+  }
+  const nOpen = o.checks.filter(k => k.open).length;
+  if (nOpen) hx("span", { class: "opencount", title: `${nOpen} check${nOpen > 1 ? "s" : ""} still need someone's agreement. See Details.` }, act, `? ${nOpen} open`);
+  const det = hx("details", null, act);
+  hx("summary", null, det, "Details");
+  hx("div", { class: "odet" }, det, `${o.details}<br><b>Constraints checked</b><ul class="chk">${o.checks.map(k => k.open
+    ? `<li class="open">${k.text} · open: ${k.open}</li>`
+    : `<li>${k.text} · ${k.src}</li>`).join("")}</ul>`);
+  el.addEventListener("pointerenter", () => setPreview(id));
+  el.addEventListener("pointerleave", () => setPreview(null));
+  el.addEventListener("focusin", () => setPreview(id));
+  el.addEventListener("focusout", e => { if (!el.contains(e.relatedTarget)) setPreview(null); });
+  return el;
+}
+function openReasons(card, id, mode = "reject"){
+  const ex = card.querySelector(".reasons"); if (ex){ ex.remove(); if (ex.dataset.mode === mode) return; }
+  const ov = mode === "override";
+  const box = hx("div", { class: "reasons", role: "group", "data-mode": mode, "aria-label": (ov ? "Reason for overriding the note on option " : "Reason for rejecting option ") + id }, card);
+  if (ov) hx("div", { class: "rq" }, box, "Why override the note?");
+  (ov ? DATA.overrideReasons : DATA.rejectionReasons[id]).forEach(r => { const b = hx("button", { type: "button" }, box, r); b.addEventListener("click", () => { (ov ? state.override : state.runRej)[id] = r; render(); const c = document.querySelector(`.opt[data-id="${id}"]`); if (c) c.focus(); }); });
+  const cx = hx("button", { type: "button", style: "color:var(--ink2)" }, box, "Cancel");
+  cx.addEventListener("click", () => { box.remove(); card.focus(); });
+  box.querySelector("button").focus();
+}
+function setPreview(id){
+  if (state.act !== 3 || state.chosen) id = null;
+  if (state.preview === id) return;
+  state.preview = id; renderLeft(); renderScene();
+}
+
+function renderScene(){
+  svg.classList.toggle("inside", state.inside);
+  stamp.classList.toggle("hidden", !state.stamp);
+  pnote.classList.toggle("hidden", !state.plannerNote);
+  // badges
+  const pv = state.preview ? optById(state.preview) : null;
+  DATA.commitments.forEach(c => {
+    const st = pv ? pv.outcome[c.id] : state.statuses[c.id];
+    const show = pv || state.final || st !== "ok";
+    setBadge(c.party, show ? st : null, !!pv);
+  });
+  // routes
+  const showRoutes = {};
+  const src = pv ? pv.id : (state.final ? state.chosen : null);
+  if (src){
+    const o = optById(src);
+    DATA.commitments.forEach(c => {
+      const before = DATA.statusAfterEvent[c.id], after = o.outcome[c.id];
+      if (before === after) return;
+      showRoutes[c.party] = after === "ok" ? "good" : after === "risk" ? "risk" : "bad";
+    });
+    if (src === "B"){ showRoutes.p2tower = "good"; delete showRoutes.tower; }
+    if (src === "C") showRoutes.inbound = "good";
+  }
+  for (const k in RT){
+    const st = showRoutes[k];
+    RT[k].classList.toggle("on", !!st && !pv); RT[k].classList.toggle("pv", !!st && !!pv);
+    if (st) RT[k].setAttribute("data-st", st);
+  }
+  laycan.classList.toggle("hidden", !(state.laycan || (pv && pv.id === "A")));
+  laycan.style.opacity = pv && pv.id === "A" && !state.laycan ? .6 : "";
+  $("banner").classList.toggle("show", state.banner);
+  $("insideCap").hidden = !state.inside;
+  $("stage").classList.toggle("paused", state.paused);
+  $("stage").classList.toggle("inside", state.inside);
+}
+
+function renderLedger(){
+  const tb = $("ledgerBody");
+  const rows = Object.values(runRows).sort((a, b) => b.run - a.run);
+  const stageNames = ["Signal", "Model", "Options", "Decision", "Recorded"];
+  const stg = n => `<div class="stg" role="img" aria-label="${n} of 5 stages done${n ? ": " + stageNames.slice(0, n).join(", ") : ""}">${stageNames.map((s, i) => `<i class="${i < n ? "on" : ""}" title="${s}"></i>`).join("")}</div>`;
+  const time = t => `${t}<span class="sub">Typical today: ${DATA.timeToDecision.typical}</span>`;
+  let h = rows.map(r => {
+    const o = r.chosen ? optById(r.chosen) : null;
+    return `<tr class="live${r.fresh ? " enter" : ""}"><td class="id">${r.id}</td><td>${DATA.event.short}</td><td>${stg(r.stages)}</td>` +
+      `<td>${o ? o.id + ": " + o.title + (r.override ? `<br><span class="muted">Overrode its note: ${shortReason(r.override)} (you)</span>` : "") : '<span class="muted">Awaiting a planner</span>'}</td>` +
+      `<td>${r.chosen ? (r.rejected.length ? r.rejected.join("<br>") : '<span class="muted">None</span>') : (state.run === r.run && (state.bRejectedThisRun || (r.run >= 2 && flagsFor().length)) ? rejectedList(null).join("<br>") : '<span class="muted">None yet</span>')}</td>` +
+      `<td>${r.late != null ? fmt(r.late) : '<span class="muted">Open</span>'}</td>` +
+      `<td>${r.time ? time(r.time + ", plant time (simulated)") : '<span class="muted">Open</span>'}</td></tr>`;
+  }).join("");
+  h += DATA.ledgerHistory.map(r => `<tr><td class="id">${r.id}</td><td>${r.event}</td><td>${stg(5)}</td><td>${r.chosen}</td><td>${r.rejected || '<span class="muted">None</span>'}</td><td>${fmt(r.late)}</td><td>${time(r.time)}</td></tr>`).join("");
+  if (tb.__h !== h){ tb.innerHTML = h; tb.__h = h; rows.forEach(r => { r.fresh = false; }); }
+}
+
+function render(){ renderHeader(); renderLeft(); renderRight(); renderScene(); renderLedger(); }
+
+/* =====================================================================
+   Controls
+   ===================================================================== */
+function showHint(){ const h = $("hint"); if (!h) return; h.hidden = false; clearTimeout(showHint.t); showHint.t = setTimeout(() => { const x = $("hint"); if (x) x.hidden = true; }, 2600); }
+function goTo(n){
+  if (n === 4){
+    if (state.chosen){ enterAct(4); return; }
+    if (state.act === 3){ showHint(); return; }
+    enterAct(3); return;
+  }
+  enterAct(n);
+}
+function stepNext(){ if (state.act === 3 && !state.chosen){ showHint(); return; } if (state.act < 4) goTo(state.act + 1); }
+function stepPrev(){ if (state.act > 1) goTo(state.act - 1); }
+function replay(){
+  if (state.chosen){
+    state.run += 1; state.chosen = null; state.runRej = {}; state.override = {}; state.bRejectedThisRun = false; runClock = 0;
+  } else {
+    // restart the current run from scratch
+    state.memory = state.memory.filter(m => m.run !== state.run);
+    state.plannerNote = state.memory.some(m => m.by === "planner");
+    state.notesRow = state.plannerNote;
+    state.runRej = {}; state.override = {}; state.bRejectedThisRun = false; runClock = 0;
+    if (runRows[state.run]) runRows[state.run].stages = 0;
+  }
+  state.paused = false; state.maxAct = 1;
+  if (state.inside) setInside(false);
+  enterAct(1);
+  const h = $("rh"); if (h) h.focus({ preventScroll: true });
+}
+function setInside(on){
+  state.inside = on;
+  const to = on ? VB_IN : VB_FULL;
+  if (reduced) setVB(to.slice()); else vbTween = { from: vb.slice(), to, t0: performance.now(), dur: 650 };
+  render();
+}
+$("playBtn").addEventListener("click", () => { state.paused = !state.paused; render(); });
+$("replayBtn").addEventListener("click", replay);
+$("viewSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setInside(b.dataset.view === "inside"); });
+
+
+// keyboard
+document.addEventListener("keydown", e => {
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  const inOpts = e.target.closest && e.target.closest("#opts");
+  if (inOpts){
+    const cards = [...document.querySelectorAll("#opts .opt")];
+    const card = e.target.closest(".opt");
+    if (e.key === "ArrowDown" || e.key === "ArrowUp"){
+      e.preventDefault();
+      const i = cards.indexOf(card), j = Math.max(0, Math.min(cards.length - 1, i + (e.key === "ArrowDown" ? 1 : -1)));
+      cards[j].focus();
+    } else if (e.key === "Enter" && e.target === card){
+      e.preventDefault(); choose(card.dataset.id);
+    } else if ((e.key === "r" || e.key === "R") && card && !state.locked && !state.chosen && e.target.tagName !== "SUMMARY"){
+      const s = optState(card.dataset.id);
+      if (!s.plannerRej && !s.viewerRej){ e.preventDefault(); openReasons(card, card.dataset.id); }
+    } else if (e.key === "Escape"){
+      const r = card && card.querySelector(".reasons");
+      if (r && r.contains(e.target)){ r.remove(); card.focus(); } else { const h = $("rh"); if (h) h.focus(); }
+    }
+    return;
+  }
+  if (e.target.matches && e.target.matches("input, textarea, select")) return;
+  if (e.key === "ArrowRight"){ e.preventDefault(); stepNext(); }
+  else if (e.key === "ArrowLeft"){ e.preventDefault(); stepPrev(); }
+});
+
+/* ---- tooltips and data-store focus ---- */
+const tip = $("tip");
+function tipFor(id){
+  const o = OBJ[id]; const rows = [];
+  const C = k => commitById(k);
+  const stOf = k => statusWord(state.statuses[k], C(k));
+  const drRate = Math.round(DATA.plant.driRate_tPerHour * state.gasPct / 100);
+  switch (id){
+    case "pellet": rows.push("Pellet stock: " + fmt(DATA.scene.pelletStock_t) + " t", "Fed from the port by conveyor"); break;
+    case "dr": rows.push(`Direct reduction: ${drRate} t/h`, `Gas: ${state.gasPct}% of allocation`); break;
+    case "eaf1": case "eaf2": rows.push("Power: available", state.stamp ? "Heat plan rebuilt for lower output" : "Running to plan"); break;
+    case "ladle": rows.push("Temperature model: online", state.stamp ? "Heat plan rebuilt for lower output" : "Running to plan"); break;
+    case "caster": rows.push(`Casting: ${fmt(state.kpiEvent || state.stamp ? DATA.plant.normalOutput_tPerDay * DATA.event.gasPct / 100 : DATA.plant.normalOutput_tPerDay)} t/day`, state.stamp ? "Sequence rebuilt by the scheduler" : "Sequence to plan"); break;
+    case "billets": rows.push(`Free billet stock: ${fmt(Math.round(state.stock / 10) * 10)} t`, state.stamp && !state.final ? "Used to cover part of the shortfall" : state.final && state.chosen === "C" ? "Spot billets: " + fmt(optById("C").spotBillets_t) + " t" : "Not committed to an order"); break;
+    case "reheat": rows.push("Reheating furnace: gas share held for rolling", "Gas-fired"); break;
+    case "rolling": {
+      const o = state.final ? optById(state.chosen) : null, ord = o ? o.rollingOrder : DATA.rollingOrder;
+      rows.push("Now: " + C(ord[0]).campaign, "Then: " + ord.slice(1).map(k => C(k).campaign).join(", then "), o ? "Order set by decision " + o.id : "Wire rod first, for the vessel laycan");
+      break;
+    }
+    case "gate": rows.push("Dispatched today: " + fmt(DATA.scene.dispatchedToday_t) + " t", "Trucks to customer sites"); break;
+    case "gas": rows.push(state.gasNotice ? `Allocation: ${DATA.event.gasPct}% for ${DATA.event.hours} h (${DATA.event.id})` : "Allocation: 100%", "National gas allocation"); break;
+    case "ore": rows.push("Pellets: " + fmt(DATA.scene.oreVessel.cargo_t) + " t", "ETA: " + DATA.scene.oreVessel.eta); break;
+    case "quay": rows.push("Ore berth and export berth", "Ore vessel due " + DATA.scene.oreVessel.eta); break;
+    case "export": rows.push(`Order C-125: wire rod, ${fmt(C("C-125").tonnes)} t`, "Laycan: " + (state.laycan ? "moved " + DATA.scene.exportVessel.moved : DATA.scene.exportVessel.laycan), stOf("C-125")); break;
+    case "tower": rows.push(`Order C-118: rebar 32 mm, ${fmt(C("C-118").tonnes)} t`, "Due " + C("C-118").due + ". " + C("C-118").note, stOf("C-118")); break;
+    case "contractor": rows.push(`Order C-121: rebar 16-25 mm, ${fmt(C("C-121").tonnes)} t`, "Due " + C("C-121").due, stOf("C-121")); break;
+    case "plant2": rows.push("Billet stock: " + fmt(DATA.plant2.billetStock_t) + " t", state.plannerNote ? "Planner note: 32 mm stand down Tue to Thu" : "32 mm stand: available in its scheduler", `Order C-130: billets, ${fmt(C("C-130").tonnes)} t. ${stOf("C-130")}`); break;
+    case "erp": rows.push("Holds orders, customer commitments, products"); break;
+    case "sched": rows.push("Holds the production plan, capacity under each limit, the meltshop schedule", "Scheduler and execution system"); break;
+    case "hist": rows.push("Holds unit temperatures, rates, stock levels"); break;
+    case "gasn": rows.push("Holds the gas allocation and changes to it"); break;
+    case "vessel": rows.push("Holds ore vessel position and ETA, export vessel laycan"); break;
+    case "notes": rows.push("Priorities and constraints held by people", state.plannerNote ? "1 note recorded from " + DATA.event.id : "Not recorded anywhere yet"); break;
+  }
+  const isStore = id in STORE_POS;
+  const name = id === "sched" ? "Meltshop scheduler (scheduler and execution system)" : o.name;
+  const held = isStore ? "" : `<div class="th">Held in: ${heldIn(id).map(s => `<i style="background:var(--${storeFam(s)})"></i>${storeName(s)}`).join(" · ")}</div>`;
+  return `<div class="tn">${name}</div>${held}${rows.filter(r => !(isStore && r === "Scheduler and execution system")).map(r => `<div class="tr">${r}</div>`).join("")}`;
+}
+function showTip(id, x, y){
+  tip.innerHTML = tipFor(id); tip.classList.add("on");
+  const r = tip.getBoundingClientRect();
+  let tx = x + 14, ty = y + 14;
+  if (tx + r.width > window.innerWidth - 8) tx = x - r.width - 14;
+  if (ty + r.height > window.innerHeight - 8) ty = y - r.height - 14;
+  tip.style.left = Math.max(8, tx) + "px"; tip.style.top = Math.max(8, ty) + "px";
+}
+function hideTip(){ tip.classList.remove("on"); }
+function focusObjects(ids){
+  svg.classList.add("focus");
+  Object.values(OBJ).forEach(o => o.nodes.forEach(n => n.classList.toggle("hl", ids.includes(o.id))));
+  linkEls.forEach(l => l.el.classList.toggle("hl", ids.includes(l.s) && ids.includes(l.o)));
+}
+function unfocus(){ svg.classList.remove("focus"); document.querySelectorAll("#scene .hl").forEach(n => n.classList.remove("hl")); }
+let tipId = null;
+svg.addEventListener("pointerover", e => {
+  const g = e.target.closest("[data-id]"); if (!g) return;
+  const id = g.dataset.id; tipId = id;
+  showTip(id, e.clientX, e.clientY);
+  if (id in STORE_POS) focusObjects([id].concat(LINKS.filter(l => l[0] === id).map(l => l[1])));
+});
+svg.addEventListener("pointermove", e => { if (tipId) showTip(tipId, e.clientX, e.clientY); });
+svg.addEventListener("pointerout", e => {
+  const g = e.target.closest("[data-id]"); if (!g) return;
+  if (e.relatedTarget && g.contains(e.relatedTarget)) return;
+  tipId = null; hideTip(); unfocus();
+});
+document.addEventListener("pointerdown", e => { if (!svg.contains(e.target)){ tipId = null; hideTip(); } });
+
+/* ---- start ---- */
+enterAct(1);
+requestAnimationFrame(t => { last = t; requestAnimationFrame(frame); });
+console.info("[plant-edge] data checks " + (window.__dataChecksPassed ? "passed" : "FAILED") + "; SVG nodes: " + document.querySelectorAll("svg *").length);
+window.__demo = { state, goTo, choose, replay, setInside };
+})();
+</script>
+</body>
+</html>
